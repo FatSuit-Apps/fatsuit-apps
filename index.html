@@ -22,6 +22,9 @@
     --warn-bg: #fff4dc;
     --warn-text: #7a4b00;
     --warn-line: #f1d99a;
+    --popup-bg: #ffffff;
+    --popup-text: #1d1d1f;
+    --popup-btn: #1a5fb4;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -39,6 +42,9 @@
       --warn-bg: #2e2412;
       --warn-text: #f3c56b;
       --warn-line: #4d3c18;
+      --popup-bg: #2b2b29;
+      --popup-text: #f2f0eb;
+      --popup-btn: #8ab4f8;
     }
   }
   * { box-sizing: border-box; }
@@ -70,6 +76,9 @@
     background: var(--chip); padding: 6px 12px; border-radius: 999px;
   }
   nav a:hover { background: var(--line); }
+  nav a.nav-guide { background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .howto { align-self: center; font-size: 14px; color: var(--muted); }
+  .howto:hover { color: var(--accent); }
 
   main { display: grid; gap: 16px; padding-bottom: 32px; }
   section {
@@ -109,11 +118,44 @@
   }
 
   .help { margin-top: 8px; }
-  .help h2 { font-size: 18px; }
-  .help ol { margin: 12px 0 0; padding-left: 20px; color: var(--muted); }
-  .help li { margin: 4px 0; }
+  .help a { color: var(--accent); font-weight: 600; }
+  .guide-intro { margin: 10px 0 0; }
+  .before { background: var(--chip); border-radius: 12px; padding: 4px 16px; margin: 18px 0 0; }
+  .before p { margin: 12px 0; font-size: 15px; }
 
-  .update-tip { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+  .steps { list-style: none; counter-reset: step; margin: 22px 0 0; padding: 0; display: grid; gap: 22px; }
+  .steps > li { counter-increment: step; position: relative; padding-left: 52px; }
+  .steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: -2px;
+    width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-text); font-weight: 800; font-size: 18px;
+  }
+  .steps h3 { margin: 4px 0 6px; font-size: 17px; }
+  .steps p { margin: 6px 0; }
+  .small-note { font-size: 14px; color: var(--muted); }
+
+  /* A simplified picture of the phone's message, with the button to tap highlighted. */
+  .popup {
+    max-width: 320px; margin: 10px 0; padding: 16px 18px 12px; border-radius: 18px;
+    background: var(--popup-bg); color: var(--popup-text); box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    border: 1px solid var(--line); font-size: 14px;
+  }
+  .popup p { margin: 0 0 12px; }
+  .popup-btns { display: flex; justify-content: flex-end; gap: 6px; font-weight: 600; color: var(--popup-btn); }
+  .popup-btns span { padding: 6px 10px; border-radius: 999px; }
+  .popup-btns .tap { outline: 3px solid var(--accent); outline-offset: 1px; }
+
+  .update-box {
+    margin: 24px 0 0; padding: 4px 16px; border-radius: 12px;
+    background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-line);
+  }
+  .update-box p { margin: 12px 0; font-size: 15px; }
+
+  .trouble { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .trouble summary { cursor: pointer; font-weight: 600; width: fit-content; }
+  .trouble dl { margin: 10px 0 0; }
+  .trouble dt { font-weight: 600; margin-top: 12px; }
+  .trouble dd { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
 
   footer { color: var(--muted); font-size: 13px; padding: 8px 0 48px; }
   footer p { margin: 0 0 8px; }
@@ -144,6 +186,7 @@
       <a href="#stance">Stance</a>
       <a href="#task-tracker">Task Tracker</a>
       <a href="#comeback">Comeback</a>
+      <a class="nav-guide" href="#install">How to install</a>
     </nav>
   </header>
 
@@ -159,6 +202,7 @@
       <p class="desc">Not sure whether to tip, or how much? Pick the country, the kind of place and how the service was, and get a straight answer. It also splits the bill between friends and keeps a history of past bills.</p>
       <div class="actions">
         <a class="btn primary" href="downloads/TipOrNot.apk" download>Download for Android</a>
+        <a class="howto" href="#install">How do I install this?</a>
       </div>
       <!-- Newest release first. Each entry: version, upload date, a general summary, and the overinstall warning. -->
       <details class="notes">
@@ -185,6 +229,7 @@
       <div class="actions">
         <a class="btn primary" href="downloads/Tuesday.apk" download>Download for Android</a>
         <a class="btn ghost" href="play/tuesday.html">Play in your browser</a>
+        <a class="howto" href="#install">How do I install this?</a>
       </div>
       <details class="notes">
         <summary>Release notes</summary>
@@ -215,6 +260,7 @@
       <div class="actions">
         <a class="btn primary" href="downloads/Stance.apk" download>Download for Android</a>
         <a class="btn ghost" href="play/stance.html">Take it in your browser</a>
+        <a class="howto" href="#install">How do I install this?</a>
       </div>
       <details class="notes">
         <summary>Release notes</summary>
@@ -239,6 +285,7 @@
       <p class="desc">A simple list for the things you do every day, week or month. Set when each task repeats, add reminders, and get a notification when it's due. Tick it off and it moves on to the next time.</p>
       <div class="actions">
         <a class="btn primary" href="downloads/TaskTracker.apk" download>Download for Android</a>
+        <a class="howto" href="#install">How do I install this?</a>
       </div>
       <details class="notes">
         <summary>Release notes</summary>
@@ -263,6 +310,7 @@
       <p class="desc">Never be lost for words again. Turn on the mic and Comeback listens for an insult aimed at you, then fires back a retort out loud. It only answers when it's sure, and an adult-language filter keeps things clean unless you turn it off. Listening happens on your phone; some phones need an offline speech language pack installed first.</p>
       <div class="actions">
         <a class="btn primary" href="downloads/Comeback.apk" download>Download for Android</a>
+        <a class="howto" href="#install">How do I install this?</a>
       </div>
       <details class="notes">
         <summary>Release notes</summary>
@@ -277,13 +325,75 @@
     </section>
 
     <section class="help" id="install">
-      <h2>Installing on Android</h2>
-      <ol>
-        <li>Tap <strong>Download for Android</strong> on your phone.</li>
-        <li>Open the downloaded file. If Android asks, allow your browser to install unknown apps.</li>
-        <li>Tap <strong>Install</strong>, then open the app.</li>
+      <h2>How to install an app</h2>
+      <p class="guide-intro">It takes about a minute, and you do it all on your phone. Your phone will show a few warnings along the way. That's normal for any app that doesn't come from the Google Play Store. The steps below show you exactly what to tap.</p>
+
+      <div class="before">
+        <p><strong>What you need:</strong> an Android phone (for example Samsung, Google Pixel, Motorola or OnePlus) with Android 8 or newer. Almost any phone from 2018 onwards will work.</p>
+        <p><strong>Have an iPhone or a computer?</strong> The apps can't be installed there, but <a href="#tuesday">Tuesday</a> and <a href="#stance">Stance</a> also work in any web browser. Just tap their "in your browser" button.</p>
+      </div>
+
+      <ol class="steps">
+        <li>
+          <h3>Open this page on your phone</h3>
+          <p>Open your phone's web browser (usually <strong>Chrome</strong>) and go to <strong>fatsuit-apps.github.io/fatsuit-apps</strong>, or tap the link someone sent you.</p>
+        </li>
+        <li>
+          <h3>Tap the orange "Download for Android" button</h3>
+          <p>Pick the app you want and tap its orange button. Your phone may ask if you're sure:</p>
+          <div class="popup" aria-label="Example of the message on your phone">
+            <p>File might be harmful. Do you want to keep this file anyway?</p>
+            <div class="popup-btns"><span>Cancel</span><span class="tap">Download anyway</span></div>
+          </div>
+          <p>Tap <strong>Download anyway</strong>.</p>
+        </li>
+        <li>
+          <h3>Open the downloaded file</h3>
+          <p>When the download finishes, tap <strong>Open</strong> in the message at the bottom of the screen.</p>
+          <p class="small-note">Missed it? Swipe down from the very top of your screen and tap the download. Or open the <strong>Files</strong> app (on Samsung: <strong>My Files</strong>) and look in <strong>Downloads</strong>.</p>
+        </li>
+        <li>
+          <h3>Give permission to install (first time only)</h3>
+          <p>The first time, your phone will stop you with a message like this:</p>
+          <div class="popup" aria-label="Example of the message on your phone">
+            <p>For your security, your phone currently isn't allowed to install unknown apps from this source.</p>
+            <div class="popup-btns"><span>Cancel</span><span class="tap">Settings</span></div>
+          </div>
+          <p>Tap <strong>Settings</strong>, turn on the switch next to <strong>Allow from this source</strong>, then tap the <strong>back arrow</strong> to return.</p>
+        </li>
+        <li>
+          <h3>Tap "Install"</h3>
+          <div class="popup" aria-label="Example of the message on your phone">
+            <p>Do you want to install this app?</p>
+            <div class="popup-btns"><span>Cancel</span><span class="tap">Install</span></div>
+          </div>
+          <p class="small-note">If a "Google Play Protect" message appears (for example "Unsafe app blocked"), tap <strong>More details</strong>, then <strong>Install anyway</strong>. If it asks to scan the app, you can tap <strong>Don't send</strong>. This only happens because the app isn't from the Play Store.</p>
+        </li>
+        <li>
+          <h3>Tap "Open". You're done!</h3>
+          <p>From now on, you'll find the app's icon with all your other apps.</p>
+          <p class="small-note">The first time you open them, Comeback asks to use your <strong>microphone</strong> (it needs to hear insults to answer them) and Task Tracker asks to send <strong>notifications</strong> (for your reminders). Tap <strong>Allow</strong>.</p>
+        </li>
       </ol>
-      <p class="update-tip"><strong>Updating an app?</strong> Download the new version and install it over the one you have. Don't uninstall the old version first, or you could lose your saved data.</p>
+
+      <div class="update-box">
+        <p><strong>Getting a newer version later?</strong> Follow the same steps. At step 5 the button says <strong>Update</strong> instead of Install.</p>
+        <p><strong>Never delete (uninstall) the old version first.</strong> Deleting it also deletes everything saved in it, like your tasks, bills or game progress.</p>
+      </div>
+
+      <details class="trouble">
+        <summary>Having trouble?</summary>
+        <dl>
+          <dt>"App not installed"</dt>
+          <dd>Your phone may be short on space. Delete a few old photos or apps you don't use, then try again.</dd>
+          <dt>"There was a problem parsing the package"</dt>
+          <dd>The download may not have finished. Download it again. If it still happens, your phone may be older than Android 8.</dd>
+          <dt>Nothing happens when I tap the file</dt>
+          <dd>Open the <strong>Files</strong> app (on Samsung: <strong>My Files</strong>), go to <strong>Downloads</strong> and tap the file there.</dd>
+          <dt>Still stuck?</dt>
+          <dd>Email <a href="mailto:fatsuitapps@gmail.com">fatsuitapps@gmail.com</a> and tell us what your phone is and what it says. We'll help.</dd>
+        </dl>
+      </details>
     </section>
   </main>
 
