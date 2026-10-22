@@ -21,3 +21,20 @@ Copy-Item "$root\tuesday\tuesday.html"      "$site\play\tuesday.html"
 Copy-Item "$root\stance-android\index.html" "$site\play\stance.html"
 
 Write-Host "Copied $($tip.Name) and the other builds into $site"
+
+# Every new version needs a release-notes entry in index.html (date, general change, version
+# number, overinstall warning). Flag any app whose current version has no entry yet.
+$versions = [ordered]@{
+    'Tip or not?'  = (Get-Content "$root\tip-or-not\app.json" -Raw | ConvertFrom-Json).expo.version
+    'Tuesday'      = ([xml](Get-Content "$root\tuesday-android\AndroidManifest.xml")).manifest.versionName
+    'Stance'       = ([xml](Get-Content "$root\stance-android\AndroidManifest.xml")).manifest.versionName
+    'Task Tracker' = ([xml](Get-Content "$root\daily-tasks-android\AndroidManifest.xml")).manifest.versionName
+    'Comeback'     = ([xml](Get-Content "$root\comeback-android\AndroidManifest.xml")).manifest.versionName
+}
+$page = Get-Content "$site\index.html" -Raw
+foreach ($app in $versions.Keys) {
+    $section = [regex]::Match($page, "<h2>$([regex]::Escape($app))</h2>[\s\S]*?</section>").Value
+    if ($section -notmatch "<strong>v$([regex]::Escape($versions[$app]))</strong>") {
+        Write-Warning "$app is now v$($versions[$app]) but has no release notes for it in index.html."
+    }
+}

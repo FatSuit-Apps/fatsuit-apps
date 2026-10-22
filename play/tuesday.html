@@ -115,7 +115,14 @@ button:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .quests li.done .qbox { background: var(--good); border-color: var(--good); color: var(--panel); }
 .quests li.failed .qbox { background: var(--bad); border-color: var(--bad); color: var(--panel); }
 .quests li.partial .qbox { background: var(--warn); border-color: var(--warn); color: var(--panel); }
-.quests li.done .qt, .quests li.failed .qt { color: var(--muted); }
+.quests li.done .qt, .quests li.failed .qt, .quests li.void .qt { color: var(--muted); }
+.quests li.void .qbox { border-style: dashed; border-color: var(--muted); color: var(--muted); }
+.picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+.pick { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; padding: 7px 9px; border: 2px solid var(--line); cursor: pointer; font-size: 13.5px; line-height: 1.35; }
+.pick:has(input:checked) { border-color: var(--ink); background: var(--panel-2); }
+.pick input { margin: 2px 0 0; width: 16px; height: 16px; accent-color: var(--ink); }
+.pick small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.receipt div span:last-child { text-align: right; }
 .quests li.failed .qt { text-decoration: line-through; }
 .quests small { display: block; color: var(--muted); font-size: 12px; }
 
@@ -276,12 +283,16 @@ const LOCS = {
     desc: () => 'Exposed brick. The menu is on a chalkboard, and the prices are higher than last month.' },
   cardshop: { name: 'Paper Goods Co.', short: 'Card Shop', zone: 'downtown', open: [540, 1080], hours: '9a–6p',
     desc: () => 'Greeting cards for every occasion, sorted by how much you\'re supposed to care.' },
+  bar: { name: 'Flannigan\'s', short: 'Flannigan\'s', zone: 'downtown', open: [960, 1440], hours: '4p–12a',
+    desc: () => 'A bar with a lot of TVs, each showing a different sport. The floor is sticky in a way that feels permanent.' },
 };
 
 const QUESTS = {
-  work: { title: 'Get to work by 9:00 AM', hint: () => 'The office is downtown. The 12 bus takes about half an hour.' },
-  meeting: { title: 'Survive the 3:00 PM meeting', hint: () => 'Be at the office at 3:00. Attendance is noted.' },
-  report: { title: 'Turn in the Q3 report by 5:00 PM', hint: () => S.f.printed ? 'Printed and left on Gary\'s chair.' : `Written: ${Math.floor(S.f.report)}%. Write it at your desk, then print it.` },
+  work: { title: () => S.f.wfh ? 'Log on from home by 9:00 AM' : 'Get to work by 9:00 AM', hint: () => 'The office is downtown. The 12 bus takes about half an hour.' },
+  meeting: { title: () => S.f.wfh ? 'Survive the 3:00 PM call' : 'Survive the 3:00 PM meeting', hint: () => S.f.wfh ? 'Be at your laptop at 3:00. Camera optional.' : 'Be at the office at 3:00. Attendance is noted.' },
+  report: { title: 'Turn in the Q3 report by 5:00 PM', hint: () => `Written: ${Math.floor(S.f.report)}%. ${S.f.wfh ? 'Write it at home, then email it to Gary.' : 'Write it at your desk, then print it.'}` },
+  tasks: { title: 'Figure out the three tasks Gary delegated', hint: () => `${S.f.tasksDone} of 3 done. You don't know how to do any of them.` },
+  forecast: { title: 'Q4 forecast for the VP by 6:00 PM', hint: () => `Progress: ${Math.floor(S.f.forecast)}%. This is not your job.` },
   dinner: { title: 'Buy groceries and cook dinner', hint: () => S.inv.groceries ? 'You have groceries. Cooking happens at home.' : 'QuikMart is near your apartment.' },
   mom: { title: 'Call Mom before 9:00 PM', hint: () => 'It\'s her birthday. A card or a gift would help, even if you can only mention it.' },
   bed: { title: 'Be in bed before midnight', hint: () => 'You can turn in at your apartment after 8:00 PM.' },
@@ -360,6 +371,51 @@ const ENEMIES = {
     win: 'He spots someone with a dog and leaves you for them.', lose: 'You sign up for a monthly donation. You\'ll cancel it. Probably.' },
 };
 
+Object.assign(ENEMIES, {
+  raise: { name: 'Gary, on the Subject of Comp', hp: 50, xp: 20, weak: ['assert'], resist: ['social'], immune: [], noFlee: true,
+    desc: 'In June he said, "Let\'s revisit comp in Q3." It is Q4.',
+    intro: '"Oh, the raise. Yeah. Yeah, no, totally. So—"',
+    moves: [{ t: '"Budgets are really tight right now."', mood: 6 }, { t: '"Honestly, it\'s above my pay grade." He laughs. You don\'t.', mood: 5 },
+      { t: '"Let\'s see how Q4 shakes out."', mood: 6 }, { t: '"You know I\'m your biggest advocate here."', mood: 4 },
+      { t: 'He checks his new watch.', mood: 5, time: 2 }],
+    win: 'He says he\'ll "put in a word with HR." The timeline is "soon-ish."', lose: 'He says budgets are tight. He is wearing a new watch.' },
+  priya: { name: 'Priya from Data Engineering', hp: 38, xp: 16, weak: ['social'], resist: ['assert'], immune: [],
+    desc: 'She could fix this in five minutes. She has decided not to want to.',
+    intro: '"Hey. What\'s up." It is not a question.',
+    moves: [{ t: '"Have you submitted a ticket?"', mood: 5 }, { t: '"That\'s not really my team\'s thing."', mood: 5 },
+      { t: '"Last time I helped your team, nobody said thanks."', mood: 6 }, { t: '"I\'m kind of slammed." She is watching a video of a cat.', mood: 4 },
+      { t: '"There\'s a training on that. It\'s two hours."', mood: 4, time: 2 }],
+    win: 'She sighs, takes your keyboard, and fixes it in four minutes. "It\'s not hard," she says. It was.', lose: 'She sends you a link to a two-hour training video and puts her headphones back on.' },
+  garyjealous: { name: 'Gary, Feeling Threatened', hp: 55, xp: 22, weak: ['social'], resist: ['assert'], immune: [], noFlee: true,
+    desc: 'The VP thanked you by name. Gary was not cc\'d. He has been different since.',
+    intro: '"Hey, quick thing. Going forward, let\'s run everything through me first. Everything."',
+    moves: [{ t: '"I just want us to present a united front."', mood: 6 }, { t: 'He corrects a typo you didn\'t make.', mood: 5 },
+      { t: '"I\'ll take it from here with the VP." He means your project.', mood: 7 }, { t: '"Not to micromanage, but."', mood: 5 }],
+    win: 'He says "Cool. Glad we\'re aligned," and walks off fast.', lose: 'You agree to cc him on everything. Everything.' },
+  silence: { name: 'The Expectant Silence', hp: 30, xp: 12, weak: ['avoid'], resist: ['social'], immune: [],
+    desc: 'Nobody is saying anything. Everybody is waiting for somebody.',
+    intro: 'The pod goes quiet. Somebody looks at you, then at Marcy, then back at you.',
+    moves: [{ t: 'Someone clears their throat in your direction.', mood: 4 }, { t: 'Marcy says "I\'m fine, I\'m fine," which means she isn\'t.', mood: 6 },
+      { t: 'Dale mouths "say something" at you.', mood: 5 }],
+    win: 'Eventually Dale goes over. He\'ll get a thank-you card on Friday.', lose: 'You end up helping anyway. It takes forty minutes, and you are slightly resentful the whole time.' },
+  mixer: { name: 'Small Talk at Flannigan\'s', hp: 60, xp: 24, weak: ['avoid'], resist: ['assert'], immune: [], noFlee: true, turn: 8,
+    desc: 'The same eleven people you saw all day, now holding drinks.',
+    intro: 'Someone hands you a lukewarm beer you didn\'t order. "Hey! Long time no see!" It has been forty minutes.',
+    moves: [{ t: '"So! Crazy day, huh?" You were there for it.', mood: 4 }, { t: 'Dale tells you about his fantasy team again. The running back is still hurt.', mood: 5 },
+      { t: '"Any fun plans for the weekend?" It is Tuesday.', mood: 4 }, { t: 'Gary says "No shop talk tonight!" and then talks about Q4.', mood: 6 },
+      { t: 'Someone recaps the 3 PM meeting for you. You were in the 3 PM meeting.', mood: 5 },
+      { t: 'The person you\'re talking to looks over your shoulder for someone better.', mood: 6 }],
+    win: 'You spot a gap in the conversation and take it. "Anyway, I should get going." It works.', lose: 'You stay another hour. You learn everyone\'s commute.' },
+  drunk: { name: 'Dale, Four Drinks In', hp: 48, xp: 20, weak: ['social'], resist: ['avoid'], immune: [], turn: 5,
+    desc: 'His tie is in his pocket. His eyes are wet. He has found you specifically.',
+    intro: '"Can I tell you something? You\'re a real one. Can I tell you something?"',
+    moves: [{ t: '"Me and Karen used to come here. Before."', mood: 6 }, { t: 'He cries a little into a basket of fries.', mood: 5 },
+      { t: '"Do you think I\'m a good person? Be honest. Don\'t be honest."', mood: 6 },
+      { t: '"My kid thinks I\'m boring." He orders another drink.', mood: 5, time: 3 }],
+    win: 'He hugs you for too long and says "you\'re a real one." You get him a rideshare. He will not remember this.',
+    lose: 'You hear the whole thing, from the beginning. It takes an hour. You get him a rideshare.' },
+});
+
 const ITEMS = {
   granola: { name: 'Granola Bar', desc: '+15 Fullness', battle: true, use: () => { mod('fullness', 15); return 'You eat the granola bar. It tastes like a granola bar.'; } },
   icedcoffee: { name: 'Bottled Iced Coffee', desc: '+18 Energy, +12 Bladder', battle: true, use: () => { mod('energy', 18); mod('bladder', 12); S.f.coffees++; return 'You drink the iced coffee. It is mostly sugar.'; } },
@@ -379,10 +435,86 @@ const fresh = () => ({
   st: { energy: 42, fullness: 30, mood: 55, bladder: 58 },
   lvl: 1, xp: 0, loc: 'apartment',
   inv: { granola: 1 },
-  q: { work: 'active', meeting: 'active', report: 'active', dinner: 'active', mom: 'hidden', bed: 'active' },
-  f: { report: 0, snoozes: 0, coffees: 0, won: 0, lost: 0, phoneMin: 0, chores: 0, filters: 2, cereal: 1, incidents: 0 },
+  q: { work: 'active', meeting: 'active', report: 'active', tasks: 'hidden', forecast: 'hidden', dinner: 'active', mom: 'hidden', bed: 'active' },
+  f: { report: 0, snoozes: 0, coffees: 0, won: 0, lost: 0, phoneMin: 0, chores: 0, filters: 2, cereal: 1, incidents: 0,
+    workMin: 0, tasksDone: 0, forecast: 0, remarks: 0, jabs: 0, events: [] },
+  ev: [],
   log: [], started: false, over: false,
 });
+
+/* ---------- Random events ---------- */
+// Each day rolls a handful of these. `win` is the window [from, until] in minutes after midnight;
+// `work` events need you at work (the office, or home when working from home), `office` ones need the office.
+const EVENTS = {
+  sick: { name: 'Woke Up Sick', blurb: 'Wake up sick and work from home.', morning: true },
+  late: { name: 'Overslept', blurb: 'Oversleep, and consider a creative excuse.', morning: true },
+  praise: { name: 'Public Praise', blurb: 'Gary praises you in front of the team. The team notices.', win: [570, 720], work: true },
+  jealous: { name: 'The Threatened Boss', blurb: 'The VP likes your work. Gary does not like that.', win: [570, 690], work: true },
+  delegate: { name: 'Can You Take This?', blurb: 'Three tasks you have no idea how to do.', win: [600, 780], work: true },
+  expert: { name: 'The Reluctant Expert', blurb: 'The one person who can help would rather not.', win: [690, 870], work: true },
+  raise: { name: 'About That Raise', blurb: 'Ask, again, about the raise you were promised.', win: [660, 990], work: true },
+  dei: { name: 'Belonging Breakouts', blurb: 'HR schedules breakout groups sorted by race.', win: [660, 870], work: true },
+  personal: { name: 'Not My Business', blurb: 'A coworker\'s crisis, and a room waiting for someone to help.', win: [630, 930], office: true },
+  layoffs: { name: 'Keep Your Head Down', blurb: 'Layoffs might be coming. Also, here\'s a director\'s job.', win: [780, 960], work: true },
+  overwork: { name: 'Running on Empty', blurb: 'You\'re working too hard, and people notice.', win: [720, 1080], work: true,
+    cond: () => S.f.workMin >= 150 && (S.st.mood < 45 || S.st.energy < 35) },
+  ragequit: { name: 'I Quit (Until Tomorrow)', blurb: 'You quit. Loudly. You\'ll be back.', win: [810, 1000], work: true },
+  lottery: { name: 'Mega Millions', blurb: 'You win $214 million. Now what?', win: [690, 1170] },
+  mixer: { name: 'Mandatory Fun', blurb: 'After-work drinks with everyone you saw all day.', at: 1020, win: [1020, 1140] },
+  drunk: { name: 'Four Drinks In', blurb: 'A coworker, a few drinks in, and his feelings. Happens at the mixer.' },
+  jealous2: { internal: true, win: [0, 1080], work: true },
+};
+const EVENT_IDS = Object.keys(EVENTS).filter(id => !EVENTS[id].internal);
+const EXCLUSIVE = [['sick', 'late'], ['praise', 'jealous']];
+
+function rollEvents(chosen) {
+  let ids = chosen;
+  if (!ids) {
+    ids = [];
+    const pool = EVENT_IDS.filter(id => id !== 'drunk').sort(() => Math.random() - 0.5);
+    const n = rand(4, 6);
+    for (const id of pool) {
+      if (ids.length >= n) break;
+      if (EXCLUSIVE.some(p => p.includes(id) && p.some(o => o !== id && ids.includes(o)))) continue;
+      ids.push(id);
+    }
+    if (ids.includes('mixer') && Math.random() < 0.6) ids.push('drunk');
+  }
+  if (ids.includes('drunk') && !ids.includes('mixer')) ids.push('mixer');
+  return ids.map(id => {
+    const d = EVENTS[id];
+    const at = d.at ?? (d.win ? rand(d.win[0], d.win[1] - 60) : 0);
+    return { id, at, until: d.win ? d.win[1] : 0, done: !d.win };
+  });
+}
+const hasEvent = id => S.ev.some(e => e.id === id);
+const atWork = () => S.loc === 'office' || (S.f.wfh && S.loc === 'apartment');
+
+const SEEN_KEY = 'tuesday-again-seen';
+function seenSet() { try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')); } catch (e) { return new Set(); } }
+function markSeen(id) {
+  if (EVENTS[id].internal) return;
+  if (!S.f.events.includes(id)) S.f.events.push(id);
+  const s = seenSet(); s.add(id);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify([...s])); } catch (e) {}
+}
+
+function checkEvents() {
+  if (busy() || !S.started) return;
+  for (const e of S.ev) {
+    if (e.done) continue;
+    const d = EVENTS[e.id];
+    if (S.t < e.at) continue;
+    if (S.t > e.until || (S.f.quit && (d.work || d.office || e.id === 'mixer'))) { e.done = true; continue; }
+    if (d.work && !atWork()) continue;
+    if (d.office && S.loc !== 'office') continue;
+    if (d.cond && !d.cond()) continue;
+    e.done = true;
+    markSeen(e.id);
+    EV_RUN[e.id]();
+    return;
+  }
+}
 let S = fresh();
 let B = null;          // active battle (not saved)
 let Q = [];            // queued events (not saved)
@@ -439,10 +571,11 @@ function advance(mins, interruptible = false) {
   for (let i = 0; i < mins; i++) {
     if (S.t >= DAY_END) break;
     S.t++; spent++;
-    S.st.energy = clamp(S.st.energy - 0.05);
+    S.st.energy = clamp(S.st.energy - (S.f.sick ? 0.075 : 0.05));
     S.st.fullness = clamp(S.st.fullness - 0.09);
     S.st.bladder = clamp(S.st.bladder + 0.11);
     if (S.st.fullness < 15 || S.st.energy < 10) S.st.mood = clamp(S.st.mood - 0.04);
+    if (S.f.anxious) S.st.mood = clamp(S.st.mood - 0.015);
     const clock = clockEvents();
     const stop = clock || thresholds();
     if (S.t >= DAY_END) { if (!P.end) { P.end = true; queue(() => endDay('midnight')); } break; }
@@ -453,19 +586,23 @@ function advance(mins, interruptible = false) {
 
 function clockEvents() {
   const t = S.t;
-  if (t === 541 && !S.f.arrived) {
+  if (t === 541 && !S.f.arrived && S.q.work === 'active') {
     S.q.work = 'failed';
-    log('You are not at your desk. Gary has noticed.', 'bad');
+    if (!S.f.excused) log('You are not at your desk. Gary has noticed.', 'bad');
   }
   if (t === 630 && S.q.mom === 'hidden') { queue(momReminder); return true; }
-  if (t === 900) {
-    if (S.loc === 'office') { queue(startMeeting); return 'hard'; }
+  if (t === 900 && S.q.meeting === 'active') {
+    if (atWork() && !S.f.quit) { queue(startMeeting); return 'hard'; }
     S.q.meeting = 'failed';
     log('The 3:00 meeting starts without you. Your name is said out loud, once.', 'bad');
   }
-  if (t === 1020 && !S.f.printed) {
+  if (t === 1020 && !S.f.printed && S.q.report === 'active') {
     S.q.report = 'failed';
     log('Gary emails: "No worries on the report, first thing tomorrow is fine." It is not fine.', 'bad');
+  }
+  if (t === 1080 && S.q.forecast === 'active') {
+    S.q.forecast = 'failed';
+    log('The VP asks where the Q4 forecast is. Gary forwards her email to you with no comment.', 'bad');
   }
   if (t === 1260 && S.q.mom === 'active') log('Mom usually goes to bed around now.', 'bad');
   return false;
@@ -484,10 +621,26 @@ function queue(fn) { Q.push(fn); }
 function busy() { return !!B || modalOpen || S.over; }
 function flush() {
   while (!busy() && Q.length) Q.shift()();
+  checkEvents();
   render();
   save();
 }
-function perform(fn) { if (busy()) return; fn(); flush(); }
+function perform(fn) { if (busy()) return; fn(); if (!busy()) sideEffects(); flush(); }
+
+// Lingering effects of earlier events: coworkers resenting the praise, a boss who feels threatened.
+const ENVY = ['Dale says "must be nice" as he walks past. You don\'t know what he means. You do.',
+  'You were left off a lunch invite. You can see it on the shared calendar.',
+  'Priya replies "k" to your message.',
+  'Someone says "here comes the favorite" in a voice that is technically a joke.'];
+const JABS = ['Gary moves your one-on-one to 7:30 AM tomorrow.',
+  'Gary replies-all to correct the date format in your email.',
+  'Gary presents your chart in a meeting and calls it "a thing I put together."',
+  'Gary schedules a meeting called "Process Alignment." You are the only invitee.'];
+function sideEffects() {
+  if (!atWork() || S.f.quit) return;
+  if (S.f.envied && S.f.remarks < ENVY.length && Math.random() < 0.35) { log(ENVY[S.f.remarks++], 'bad'); mod('mood', -3); }
+  if (S.f.jealous && S.f.jabs < JABS.length && Math.random() < 0.3) { log(JABS[S.f.jabs++], 'bad'); mod('mood', -4); }
+}
 
 /* ---------- Soft consequences ---------- */
 function bladderEmergency() {
@@ -528,13 +681,263 @@ function momReminder() {
     choices: [{ label: 'Right. Okay.' }] });
 }
 function startMeeting() {
-  if (S.loc !== 'office') return;
-  log('It\'s 3:00. You walk to Conference Room B.', 'note');
+  if (!atWork()) return;
+  log(S.loc === 'office' ? 'It\'s 3:00. You walk to Conference Room B.' : 'It\'s 3:00. You join the call with your camera off.', 'note');
   startBattle('meeting', {
     win: () => { S.q.meeting = 'done'; },
     lose: () => { S.q.meeting = 'partial'; },
   });
 }
+
+/* ---------- Random event scenes ---------- */
+function sickMorning() {
+  markSeen('sick');
+  S.f.sick = true; S.st.energy = 30; S.st.mood = 42;
+  showModal({ title: 'Something Is Wrong',
+    body: '<p>6:30 AM. You wake up and know immediately. Your throat feels sanded. Your head is full of wet cement.</p><p>You are sick. Not stay-in-bed sick. Work-from-home-and-feel-bad-about-it sick.</p>',
+    choices: [
+      { label: 'Email Gary: working from home', sub: 'Your desk work moves to your apartment today', key: true, run: () => {
+        S.started = true; S.f.wfh = true; S.q.work = 'done'; gainXP(5);
+        log('You email Gary that you\'re working from home today.', 'good');
+        showModal({ title: 'Sent',
+          body: '<p class="mono">To: Gary · Subject: WFH today</p><p>Hi Gary, I woke up under the weather, so I\'m going to work from home so I don\'t spread anything. I\'ll be online all day. Thanks.</p><p>Four minutes later: "Feel better!! Can you still make the 3pm? Report still due at 5 right?"</p>',
+          choices: [{ label: 'Reply "Yes, of course"' }] });
+      } },
+      { label: 'Go in anyway', sub: 'Tough it out. Your coworkers will love this.', run: () => {
+        S.started = true; log('You decide to go in sick. Everyone will be thrilled.');
+      } },
+    ] });
+}
+
+const EXCUSES = {
+  grandma: { reply: '"Oh no. I\'m so sorry for your loss. Take all the time you need."',
+    log: 'You told Gary your grandmother died. She did not.',
+    arrive: 'People are being very gentle with you. There\'s a sympathy card on your desk, signed by eleven people.' },
+  mugged: { reply: '"OMG are you ok?? Did you file a police report? Take your time."',
+    log: 'You told Gary you were mugged. You were not.',
+    arrive: 'Dale asks what they took. You say "my wallet." Your wallet is visibly in your hand.' },
+  hospital: { reply: '"Yikes!! Feel better. Just send a doctor\'s note when you can :)"',
+    log: 'You told Gary you were in the ER. You were in bed.',
+    arrive: 'Gary: "Weren\'t you in the ER?" You: "They let me go." Gary: "Wow. Okay."' },
+};
+function lateMorning() {
+  markSeen('late');
+  S.t = 527; S.st.energy = 58; S.st.bladder = 72;
+  showModal({ title: 'The Light Is Wrong',
+    body: '<p>You wake up because it\'s too bright. Your phone is face-down on the floor. The alarm went off, and you turned it off. You don\'t remember doing that.</p><p class="mono" style="font-size:18px">8:47 AM</p><p>Work starts at 9. The bus takes half an hour.</p>',
+    choices: [
+      { label: 'Rush in and apologize', sub: 'You\'ll be late, and Gary will want a word', run: () => {
+        S.started = true; log('You overslept. You get dressed in four minutes.', 'bad');
+      } },
+      { label: 'Text Gary an excuse', sub: 'Something serious. Something nobody questions.', key: true, run: excuseMenu },
+    ] });
+}
+function excuseMenu() {
+  showModal({ title: 'Text to Gary', body: '<p>You type "running late" and delete it three times. You need something better.</p>', choices: [
+    { label: '"My grandma passed away"', sub: 'She is alive. She is on Facebook right now.', run: () => fakeExcuse('grandma') },
+    { label: '"I got mugged"', sub: 'You will need to remember what they took', run: () => fakeExcuse('mugged') },
+    { label: '"I\'m in the ER"', sub: 'He might ask for a doctor\'s note', run: () => fakeExcuse('hospital') },
+    { label: 'Just tell the truth', sub: '"Overslept, so sorry, on my way"', run: () => {
+      S.started = true; mod('mood', 2);
+      log('You text Gary the truth. He replies "ok." Just "ok."');
+    } },
+  ] });
+}
+function fakeExcuse(k) {
+  S.started = true; S.f.lie = k; S.f.excused = true; mod('mood', -6);
+  log(EXCUSES[k].log, 'bad');
+  showModal({ title: 'Gary Replies', body: `<p>${EXCUSES[k].reply}</p><p>You feel bad about it for almost a full minute.</p>`, choices: [{ label: 'Okay' }] });
+}
+
+function lottery(n = 0) {
+  const recheck = ['They\'re still the numbers.', 'Still the numbers. You read them out loud, quietly.',
+    'You compare them digit by digit. They match. Your hands are doing something strange.'];
+  showModal({ title: 'Mega Millions',
+    body: n === 0
+      ? `<p>A push notification: "Mega Millions results are in!" You bought one ticket on Saturday because the jackpot was big and the line was short.</p><p>You check the numbers. You check again. Every number matches, including the Mega Ball.</p><p class="mono" style="font-size:18px">Jackpot: $214,000,000</p><p>Lump sum after taxes: about $98 million. It will take weeks to arrive. Your checking account says ${money(S.money)}.</p>`
+      : `<p>${recheck[Math.min(n, recheck.length) - 1]}</p>`,
+    choices: [
+      { label: 'Check the numbers again', run: () => lottery(n + 1) },
+      { label: 'Tell no one. Act normal.', sub: 'Sign the ticket. Call a lawyer tomorrow.', key: true, run: () => {
+        S.f.lotto = 'quiet'; mod('mood', 30);
+        log('You sign the back of the ticket in a bathroom stall and put it in your wallet, behind your library card. Tomorrow you call a lawyer. Today you are still a person with a Q3 report.', 'good');
+      } },
+      { label: 'Tell everyone', run: () => {
+        S.f.lotto = 'told'; mod('mood', 12);
+        log(atWork() && S.loc === 'office'
+          ? 'Within ten minutes, Dale asks for "a small loan, like a bridge thing," two people you\'ve never met add you on LinkedIn, and Gary asks if you\'re "still committed to Q4."'
+          : 'You tell the group chat. Within ten minutes you have fourteen texts from numbers you don\'t recognize and a cousin you forgot about.', 'note');
+      } },
+      { label: 'Quit on the spot', sub: 'You don\'t need this job anymore', run: () => {
+        S.f.lotto = 'quit'; S.f.quit = 'lottery'; mod('mood', 30);
+        for (const k of ['meeting', 'report', 'tasks', 'forecast']) if (S.q[k] === 'active') S.q[k] = 'void';
+        if (S.loc === 'office') {
+          log('You walk to Gary\'s desk, put your badge on his keyboard, and say "I\'m done." He says "Done with what?" You are already at the elevator.', 'good');
+          S.loc = 'cafe';
+        } else {
+          log('You email Gary from your phone. The subject line is "Hi." The body is "I quit." You don\'t explain. You don\'t have to.', 'good');
+        }
+      } },
+    ] });
+}
+
+function doRageQuit() {
+  S.f.quit = 'rage'; mod('mood', 18);
+  const home = S.loc !== 'office';
+  showModal({ title: 'I Quit',
+    body: home
+      ? '<p>You unmute. You say "I QUIT," louder than you meant to. Then you keep going. You say several things about the printer, the 3 PM meeting, and Gary\'s mug.</p><p>You leave the call. Your laptop fan is the only sound in the apartment.</p>'
+      : '<p>You stand up. You say "I QUIT," louder than you meant to. Then you keep going. You say several things about the printer, the 3 PM meeting, and Gary\'s mug.</p><p>You put your stapler in your bag. It is not your stapler. You walk out. Somebody starts a slow clap, then stops.</p>',
+    choices: [{ label: home ? 'Close the laptop' : 'Walk out', run: () => {
+      log('You quit your job. Loudly.', 'bad');
+      if (!home) { S.loc = 'cafe'; log('You end up at the Corner Café, shaking a little, holding someone else\'s stapler.'); }
+    } }] });
+}
+
+function startMixer() {
+  S.f.mixer = 'went';
+  log('You arrive at Flannigan\'s. It\'s the same eleven people from work, now holding drinks.');
+  const after = () => {
+    if (!hasEvent('drunk') || S.f.events.includes('drunk')) return;
+    markSeen('drunk');
+    log('You make it to the door. Dale intercepts you.');
+    startBattle('drunk', { win: () => { S.f.drunkDale = 'listened'; }, lose: () => { S.f.drunkDale = 'listened'; advance(60); }, flee: () => { S.f.drunkDale = 'escaped'; } });
+  };
+  startBattle('mixer', { win: after, lose: () => { advance(60); after(); } });
+}
+
+const EV_RUN = {
+  praise() {
+    S.f.envied = true; gainXP(8);
+    showModal({ title: 'Public Praise',
+      body: `<p>${S.f.wfh ? 'On the team call, Gary unmutes.' : 'Gary stops in the middle of the pod and clears his throat.'} "Hey, everyone. Quick shout-out for the Henderson numbers. That's what ownership looks like, people."</p><p>He means you. Several people turn to look at you. Two of them clap. It is not nice clapping.</p>`,
+      choices: [
+        { label: 'Say "Team effort!"', sub: 'Nobody believes this', run: () => { mod('mood', 3); log('You say "team effort." The team does not feel included.'); } },
+        { label: 'Just say thanks', run: () => { mod('mood', 6); log('You say thanks. The temperature in the pod drops about four degrees.'); } },
+      ] });
+  },
+  jealous() {
+    S.f.jealous = true;
+    S.ev.push({ id: 'jealous2', at: S.t + rand(90, 180), until: 1080, done: false });
+    showModal({ title: 'Reply All',
+      body: '<p>The VP replies-all to your analysis: "Great work on this. Exactly what we needed." She thanks you by name. She does not mention Gary.</p><p>You can see Gary reading it. He reads it again. He looks over at you, then back at his screen.</p>',
+      choices: [{ label: 'Oh no' }] });
+  },
+  jealous2() { startBattle('garyjealous', {}); },
+  delegate() {
+    S.q.tasks = 'active'; S.f.tasksDone = 0;
+    showModal({ title: 'Can You Take This?',
+      body: '<p>Gary forwards you three emails. Each one says only "can you take this?"</p><ul class="howto"><li>Migrate the team tracker into the new project tool</li><li>Fix the macro in the budget workbook that "just broke"</li><li>Set up the vendor\'s SFTP connection</li></ul><p>You have never done any of these things. You are not sure what SFTP stands for.</p>',
+      choices: [
+        { label: 'Reply "On it!"', sub: 'You are not on it' },
+        { label: 'Ask Gary for context', sub: '5 min', run: () => { advance(5); log('You ask Gary for context. He says "just figure it out, you\'re smart," then leaves for lunch.'); } },
+      ] });
+  },
+  expert() {
+    const stuck = S.q.tasks === 'active' ? TASKS[S.f.tasksDone] : S.f.report < 100 ? 'a pivot table in the Q3 report' : 'a formula that should work';
+    showModal({ title: 'You Need an Expert',
+      body: `<p>You've been stuck on ${stuck} for a while. Priya from Data Engineering could fix it in five minutes. Everyone knows this. Priya knows this.</p>`,
+      choices: [
+        { label: 'Ask Priya for help', sub: 'Encounter', key: true, run: () => startBattle('priya', {
+          win: () => {
+            if (S.q.tasks === 'active') {
+              log(`Priya fixed ${TASKS[S.f.tasksDone++]}. You watched, which counts as learning.`, 'good');
+              if (S.f.tasksDone >= 3) S.q.tasks = 'done';
+            } else if (S.f.report < 100) {
+              S.f.report = Math.min(100, S.f.report + 25);
+              log(`Priya fixed the pivot table. Report: ${Math.floor(S.f.report)}%.`, 'good');
+            } else { mod('mood', 5); log('Priya fixed your formula. It was a missing dollar sign.', 'good'); }
+          },
+          lose: () => { S.f.priyaTip = true; log('You watch some of the training video. It helps, a little.'); },
+        }) },
+        { label: 'Keep struggling alone', sub: '30 min', run: () => { advance(30); mod('mood', -4); log('You struggle alone for thirty minutes. You learn a lot. None of it is useful.'); } },
+      ] });
+  },
+  raise() {
+    showModal({ title: 'About That Raise',
+      body: `<p>${S.f.wfh ? 'Gary\'s status says "Available."' : 'Gary is alone at his desk, eating almonds one at a time.'} In June he said, "Let's revisit comp in Q3." It is late October. You've asked twice since.</p>`,
+      choices: [
+        { label: 'Ask him again', sub: 'Encounter', key: true, run: () => startBattle('raise', { win: () => { S.f.raise = 'soon'; }, lose: () => { S.f.raise = 'tight'; } }) },
+        { label: 'Not today', sub: 'Maybe Thursday', run: () => { S.f.raise = 'skipped'; mod('mood', -2); log('You decide not to ask about the raise today. You said that last week too.'); } },
+      ] });
+  },
+  dei() {
+    const went = (title, text, mins, mood) => () => {
+      advance(mins); mod('mood', mood); gainXP(6);
+      showModal({ title, body: text, choices: [{ label: 'Go back to your desk' }] });
+    };
+    showModal({ title: 'Belonging Breakouts',
+      body: '<p>HR sends a same-day calendar invite: <b>"Belonging Breakouts: Safe Spaces for Courageous Conversations."</b></p><p>Attendees will be split into affinity groups by race, "based on the voluntary self-ID survey." Rooms are listed in a color-coded spreadsheet. You don\'t remember filling out the survey, but you have a room.</p>',
+      choices: [
+        { label: 'Go to your assigned room', sub: '45 min', run: () => { S.f.dei = 'went'; went('Conference Room C',
+          '<p>Eight people sit in a circle of chairs. The facilitator asks everyone to share one word for how they\'re arriving today. People say "grateful," "present," and "hungry."</p><p>Everyone is careful and kind. Nobody is sure what the space is safe from. At the end there is a survey about the meeting.</p>', 45, -3)(); } },
+        { label: 'Ask HR how the rooms were assigned', sub: '50 min', run: () => { S.f.dei = 'asked'; went('A Follow-Up',
+          '<p>Denise from HR says the rooms came from the self-ID survey, "or, where that was missing, our best guess." She hears herself say it. She says she\'ll take that feedback back to the team.</p><p>You go to your room anyway. Same circle of chairs. Same survey at the end.</p>', 50, -2)(); } },
+        { label: 'Block "Focus Time" instead', sub: 'Skip it', run: () => { S.f.dei = 'skipped'; mod('mood', 1);
+          log('You block "Focus Time" on your calendar. HR replies: "Missed you! Deck attached." The deck is 41 slides. Slide 3 is a photo of a bridge.'); } },
+      ] });
+  },
+  personal() {
+    showModal({ title: 'Not Your Business',
+      body: '<p>Marcy from Payroll is on the phone in the break room. It\'s her landlord, then her sister, then her landlord again. From what you can hear, she has until Friday to move out.</p><p>The pod has gone quiet in the specific way that means somebody should do something. A few people are looking at you.</p>',
+      choices: [
+        { label: 'Step up and help', sub: '40 min · Energy −5', run: () => {
+          advance(40); mod('energy', -5); mod('mood', 3); gainXP(15); S.f.marcy = 'helped';
+          log('You help Marcy find the tenant hotline and sit with her on hold. She says thank you twice. Later, three people tell you that was "so nice." None of them moved.', 'good');
+        } },
+        { label: 'Stay out of it', sub: 'Encounter · the silence', run: () => startBattle('silence', {
+          win: () => { S.f.marcy = 'avoided'; }, flee: () => { S.f.marcy = 'avoided'; },
+          lose: () => { S.f.marcy = 'helped'; advance(40); },
+        }) },
+      ] });
+  },
+  layoffs() {
+    S.f.anxious = true; S.q.forecast = 'active'; S.f.forecast = 0;
+    showModal({ title: 'Keep Your Head Down',
+      body: `<p>${S.f.wfh ? 'Gary calls you. Gary never calls.' : 'Gary waves you into a conference room and closes the door. Gary never closes the door.'}</p><p>"This stays between us. There might be some... restructuring. Soon. Just keep your head down, okay?"</p><p>Then, in the same breath: "Also, the VP needs a Q4 forecast by six. I told her you'd own it. Big visibility thing."</p><p>The forecast is a director's job. You are not a director.</p>`,
+      choices: [
+        { label: 'Nod', sub: 'Keep your head down' },
+        { label: 'Ask if your job is safe', run: () => { mod('mood', -4); log('You ask if your job is safe. Gary says, "Nobody\'s job is safe. That\'s not a threat, it\'s just true."', 'bad'); } },
+      ] });
+  },
+  overwork() {
+    showModal({ title: 'Running on Empty',
+      body: `<p>You've been heads-down for ${(S.f.workMin / 60).toFixed(1)} hours. Your shoulders are up by your ears. You've reread the same cell eleven times.</p><p>${S.f.wfh ? 'Dale messages you: "hey you good? you\'ve been green on slack for like 6 hrs straight lol"' : 'Dale and Priya stop at your desk. "Hey. You doing okay? You\'ve been at it all day."'}</p>`,
+      choices: [
+        { label: '"I\'m FINE."', sub: 'Said through your teeth', run: () => { mod('mood', -5); S.f.snapped = true; log('You tell them you\'re fine, loudly. They back away slowly. Later you hear Dale tell someone you "seem stressed."', 'bad'); } },
+        { label: '"Honestly? No."', sub: '15 min walk · Mood +12', run: () => { advance(15); mod('mood', 12); mod('energy', 4); S.f.vented = true; log('You walk around the block with them and complain about everything. It helps more than it should.', 'good'); } },
+        { label: 'Make a joke that isn\'t a joke', run: () => { mod('mood', -1); log('"Just living the dream!" They laugh. You don\'t.'); } },
+      ] });
+  },
+  ragequit() {
+    const trigger = pick(['Gary asks you to redo a slide you\'ve already redone twice. "Just make it pop."',
+      'Someone replies-all "Thanks!" to an email sent to 400 people. Then someone replies-all asking to be removed. Then someone replies-all asking everyone to stop replying-all.',
+      'Gary walks past and says "quick favor" without slowing down. He means a four-hour favor.']);
+    showModal({ title: 'Something Snaps', body: `<p>${trigger}</p><p>Something in you goes very quiet, and then very loud.</p>`, choices: [
+      { label: 'Quit. Loudly.', key: true, run: doRageQuit },
+      { label: 'Count to ten', run: () => { log('You count to ten. At seven, Gary says "quick favor." You quit at eight.', 'bad'); doRageQuit(); } },
+    ] });
+  },
+  lottery() { lottery(0); },
+  mixer() {
+    if (S.loc === 'office') {
+      showModal({ title: 'Mandatory Fun',
+        body: '<p>Gary stands on a chair, which is against policy. "Team mixer at Flannigan\'s! Mandatory fun, people!"</p><p>The calendar invite says "optional." Gary\'s face does not.</p>',
+        choices: [{ label: 'Go to Flannigan\'s', sub: 'Across the street · 5 min', key: true, run: () => { advance(5); S.loc = 'bar'; startMixer(); } }] });
+      return;
+    }
+    const far = LOCS[S.loc] && LOCS[S.loc].zone === 'home';
+    showModal({ title: 'Gary Texts',
+      body: `<p>${S.f.sick ? '"Feel better!! Mixer at Flannigan\'s if you\'re up for it lol"' : '"Mixer at Flannigan\'s, 5:30! Where are you?? Everyone\'s asking"'}</p><p>Nobody is asking.</p>`,
+      choices: [
+        { label: 'Go to the mixer', sub: far ? 'Bus downtown · $2.75 · about 28 min' : 'Walk · 6 min', run: () => {
+          if (far) { if (spend(2.75)) advance(28); else advance(70); } else advance(6);
+          S.loc = 'bar'; startMixer();
+        } },
+        { label: 'Reply "Can\'t make it, next time!"', run: () => { S.f.mixer = 'skipped'; mod('mood', -2); log('You skip the mixer. Gary replies with a thumbs-up, which is somehow worse.'); } },
+      ] });
+  },
+};
 
 /* ---------- Travel ---------- */
 function travel(dest) {
@@ -580,9 +983,16 @@ function arrive(dest) {
   S.loc = dest;
   const L = LOCS[dest];
   log(`You arrive at ${L.name}.${isOpen(dest) ? '' : ' It\'s closed.'}`);
-  if (dest === 'office' && !S.f.arrived && S.t < DAY_END) {
+  if (dest === 'office' && S.f.quit) log(S.f.quit === 'rage' ? 'You stand outside the building for a minute. Not today.' : 'You don\'t work here anymore. The lobby looks smaller already.');
+  if (dest === 'office' && !S.f.arrived && S.t < DAY_END && !S.f.quit) {
     S.f.arrived = true;
-    if (S.t <= 540) {
+    if (S.f.sick) log('You cough once. Three people roll their chairs away.', 'bad');
+    if (S.f.wfh) {
+      log('Gary looks up. "Weren\'t you working from home?" You say you\'re feeling better. You are not.');
+    } else if (S.f.excused) {
+      S.q.work = 'partial'; mod('mood', -4);
+      log(EXCUSES[S.f.lie].arrive, 'bad');
+    } else if (S.t <= 540) {
       S.q.work = 'done'; gainXP(10);
       log('You badge in. Nobody notices, which is the goal.', 'good');
     } else {
@@ -602,15 +1012,67 @@ function restroom(mins = 4) {
   log('You use the restroom. Bladder reset.');
 }
 
-function workRate() {
-  let r = 22 + 4 * (S.lvl - 1);
-  if (S.st.energy < 20) r *= 0.6;
-  if (S.st.mood < 20) r *= 0.75;
-  if (hungry()) r *= 0.8;
-  return Math.round(r);
+function workFactor() {
+  let f = 1;
+  if (S.st.energy < 20) f *= 0.6;
+  if (S.st.mood < 20) f *= 0.75;
+  if (hungry()) f *= 0.8;
+  return f;
 }
+const workRate = () => Math.round((22 + 4 * (S.lvl - 1)) * workFactor());
+const forecastRate = () => Math.round(28 * workFactor());
+
+const TASKS = ['the tracker migration', 'the budget macro', 'the SFTP connection'];
+function attemptTask() {
+  const spent = advance(45, true);
+  S.f.workMin += spent; mod('energy', -6); mod('mood', -3);
+  const chance = 0.3 + 0.1 * (S.lvl - 1) + (S.f.priyaTip ? 0.2 : 0);
+  if (spent >= 40 && Math.random() < chance) {
+    const name = TASKS[S.f.tasksDone++];
+    gainXP(10);
+    log(`You figured out ${name}. You're not sure how. Don't touch it.`, 'good');
+    if (S.f.tasksDone >= 3) { S.q.tasks = 'done'; log('All three delegated tasks are done. They are yours forever now.', 'good'); }
+  } else {
+    log(pick(['You watch a YouTube tutorial. It\'s for a different version.',
+      'You find a forum post from 2014 with your exact problem. The only reply says "nvm fixed it."',
+      'You break something else. You fix that instead.',
+      'You read the documentation. The documentation is one slide.']) + ` (${S.f.tasksDone} of 3 done)`);
+  }
+}
+function workForecast() {
+  const spent = advance(60, true);
+  S.f.workMin += spent;
+  S.f.forecast = Math.min(100, S.f.forecast + forecastRate() * spent / 60);
+  mod('energy', -9 * spent / 60); mod('mood', -6 * spent / 60); gainXP(Math.round(7 * spent / 60));
+  log(`You work on the Q4 forecast. You google "how to build a revenue forecast." Forecast: ${Math.floor(S.f.forecast)}%.`);
+  if (S.f.forecast >= 100) { S.q.forecast = 'done'; gainXP(12); log('You send the VP the Q4 forecast. Gary replies-all: "Great work, team."', 'good'); }
+}
+
+// The desk work you can do at the office, or at home when working from home.
+function workActions() {
+  const a = [];
+  const done = S.f.report >= 100;
+  a.push(act('Work on the Q3 report', done ? 'The report is written' : `60 min · Energy −8 · Report +${workRate()}%`, () => work(60), done, !done));
+  a.push(act('Work for 30 minutes', done ? 'The report is written' : `30 min · Report +${Math.round(workRate() / 2)}%`, () => work(30), done));
+  if (S.loc === 'office') {
+    a.push(act('Print the report', S.f.printed ? 'Already printed' : done ? 'Encounter · the printer' : 'Finish writing it first', printReport, !done || S.f.printed, done && !S.f.printed));
+  } else {
+    a.push(act('Email the report to Gary', S.f.printed ? 'Already sent' : done ? '5 min' : 'Finish writing it first', () => {
+      advance(5);
+      log('The attachment bounces for being too big. You zip it. It goes through.');
+      reportIn();
+    }, !done || S.f.printed, done && !S.f.printed));
+  }
+  if (S.q.tasks === 'active') a.push(act('Attempt a delegated task', `45 min · ${S.f.tasksDone} of 3 done · no idea how`, attemptTask, false, true));
+  if (S.q.forecast === 'active') a.push(act('Work on the Q4 forecast', `60 min · Forecast +${forecastRate()}%`, workForecast, false, true));
+  a.push(act('Deal with your inbox', S.f.inbox ? 'Done for today' : 'Encounter · 214 unread', () => {
+    startBattle('inbox', { win: () => { S.f.inbox = true; }, lose: () => { S.f.inbox = true; }, flee: () => log('You close the tab. The emails remain.') });
+  }, !!S.f.inbox));
+  return a;
+}
+
 function work(mins) {
-  if (S.t >= 600 && !S.f.dale) {
+  if (S.t >= 600 && !S.f.dale && S.loc === 'office') {
     S.f.dale = true;
     log('You open the report. Dale appears at the edge of your cubicle.');
     startBattle('dale', {});
@@ -618,12 +1080,13 @@ function work(mins) {
   }
   const rate = workRate();
   const spent = advance(mins, true);
+  S.f.workMin += spent;
   const gain = rate * spent / 60;
   S.f.report = Math.min(100, S.f.report + gain);
   mod('energy', -8 * spent / 60); mod('mood', -5 * spent / 60);
   gainXP(Math.round(6 * spent / 60));
   log(spent < mins
-    ? `You work for ${spent} minutes before you're interrupted. Report: ${Math.floor(S.f.report)}%.`
+    ? `You work for ${spent} minute${spent === 1 ? '' : 's'} before you're interrupted. Report: ${Math.floor(S.f.report)}%.`
     : `You work on the report for ${spent} minutes. ${pick(['You make a pivot table.', 'You rename a column, then rename it back.', 'You write "Key Takeaways" and then sit there.', 'You find a number that is wrong. It was always wrong.'])} Report: ${Math.floor(S.f.report)}%.`);
   if (S.f.report >= 100) log('The report is written. Now it needs to be printed.', 'good');
 }
@@ -639,7 +1102,9 @@ function reportIn() {
   S.f.printed = true;
   S.q.report = S.t <= 1020 ? 'done' : 'partial';
   gainXP(10);
-  log(S.t <= 1020 ? 'The Q3 report is on Gary\'s chair, on time.' : 'The Q3 report is on Gary\'s chair. Late, but there.', S.t <= 1020 ? 'good' : '');
+  const where = S.loc === 'office' ? 'on Gary\'s chair' : 'in Gary\'s inbox';
+  log(S.t <= 1020 ? `The Q3 report is ${where}, on time.` : `The Q3 report is ${where}. Late, but there.`, S.t <= 1020 ? 'good' : '');
+  if (S.f.jealous) { mod('mood', -4); log('Gary sends the report back within a minute: "Can we do Calibri?"', 'bad'); }
 }
 
 function buy(item, price, mins = 3, msg) {
@@ -670,13 +1135,17 @@ function callMom() {
     else if (g >= 1) { mod('mood', 11); body = `<p>You tell her you got her ${gifts.join(' and ')}. She says that\'s sweet. She tells you about her day, which included a long story about the pharmacy.</p>`; }
     else { mod('mood', 6); body = '<p>She says she wasn\'t expecting anything. She mentions that your sister sent flowers.</p><p>She asks if you\'re eating enough. You say yes.</p>'; }
   }
+  if (onTime && S.f.lie === 'grandma') body += '<p>She mentions that Grandma called this morning to say happy birthday. You say "great!" a little too loudly.</p>';
+  if (onTime && S.f.lotto) body += S.f.lotto === 'told'
+    ? '<p>She asks about the lottery. Your cousin already told her. She would like to discuss the roof.</p>'
+    : '<p>You almost tell her about the lottery ticket. You decide to tell her in person.</p>';
   log(onTime ? 'You called Mom. Twenty minutes.' : 'You left Mom a voicemail.', onTime ? 'good' : '');
   showModal({ title: onTime ? 'You Call Mom' : 'Voicemail', body, choices: [{ label: 'Hang up' }] });
 }
 
 const ACTIONS = {
   apartment() {
-    const a = [];
+    const a = S.f.wfh && !S.f.quit && S.t < 1200 ? workActions() : [];
     const showered = S.f.showered;
     a.push(act('Take a shower', showered ? '12 min · Mood +3' : '12 min · Mood +8, Energy +5', () => {
       advance(12); mod('mood', showered ? 3 : 8); mod('energy', showered ? 1 : 5);
@@ -730,15 +1199,8 @@ const ACTIONS = {
   },
 
   office() {
-    if (!isOpen('office')) return [];
-    const a = [];
-    const done = S.f.report >= 100;
-    a.push(act('Work on the Q3 report', done ? 'The report is written' : `60 min · Energy −8 · Report +${workRate()}%`, () => work(60), done, !done));
-    a.push(act('Work for 30 minutes', done ? 'The report is written' : `30 min · Report +${Math.round(workRate() / 2)}%`, () => work(30), done));
-    a.push(act('Print the report', S.f.printed ? 'Already printed' : done ? 'Encounter · the printer' : 'Finish writing it first', printReport, !done || S.f.printed, done && !S.f.printed));
-    a.push(act('Deal with your inbox', S.f.inbox ? 'Done for today' : 'Encounter · 214 unread', () => {
-      startBattle('inbox', { win: () => { S.f.inbox = true; }, lose: () => { S.f.inbox = true; }, flee: () => log('You close the tab. The emails remain.') });
-    }, !!S.f.inbox));
+    if (!isOpen('office') || S.f.quit) return [];
+    const a = workActions();
     const donut = !S.f.donut && S.t < 720;
     a.push(act('Break room donuts', donut ? '5 min · Free · Fullness +18' : S.f.donut ? 'You had one' : 'Gone by noon', () => {
       advance(5); S.f.donut = true; mod('fullness', 18); mod('mood', 3);
@@ -806,6 +1268,23 @@ const ACTIONS = {
     a.push(act('Scented candle', S.inv.candle ? 'Got one' : '$22.00 · "Autumn Cabin"', () => buy('candle', 22, 5, 'You buy a candle called "Autumn Cabin." It smells like a candle.'), !!S.inv.candle || S.money < 22));
     a.push(act('Browse', '10 min · Mood +3', () => { advance(10); mod('mood', 3); log('You read the funny cards. None of them are funny. You laugh at one anyway.'); }));
     return a;
+  },
+
+  bar() {
+    if (!isOpen('bar')) return [];
+    return [
+      act('Have a beer', '$8.00 · 20 min · Mood +6, Energy −4', () => {
+        if (!spend(8)) return log('Not enough money.', 'bad');
+        advance(20); mod('mood', 6); mod('energy', -4); mod('bladder', 18);
+        log('You have a beer. It costs eight dollars and tastes like four.');
+      }, S.money < 8),
+      act('Order fries', '$7.50 · 15 min · Fullness +30', () => {
+        if (!spend(7.5)) return log('Not enough money.', 'bad');
+        advance(15); mod('fullness', 30); mod('mood', 3);
+        log('The fries come in a tiny metal bucket, for some reason. Fullness +30.');
+      }, S.money < 7.5),
+      act('Use the restroom', '4 min · Bladder reset', () => restroom()),
+    ];
   },
 
   park() {
@@ -986,52 +1465,92 @@ function showModal({ title, body, choices }) {
 }
 
 /* ---------- Ending ---------- */
-const PTS = { done: 2, partial: 1, failed: 0, active: 0, hidden: 0 };
+const PTS = { done: 2, partial: 1, failed: 0, active: 0, hidden: 0, void: 0 };
+const qTitle = k => typeof QUESTS[k].title === 'function' ? QUESTS[k].title() : QUESTS[k].title;
 function endDay(reason) {
   if (S.over) return;
   if (reason === 'bed') S.q.bed = 'done';
   else S.q.bed = 'failed';
+  if (S.q.tasks === 'active') S.q.tasks = S.f.tasksDone ? 'partial' : 'failed';
+  if (S.q.forecast === 'active') S.q.forecast = 'failed';
   if (S.q.mom === 'active' || S.q.mom === 'hidden') S.q.mom = 'failed';
   if (S.q.dinner === 'active') S.q.dinner = 'failed';
   if (S.q.report === 'active') S.q.report = 'failed';
   if (S.q.meeting === 'active') S.q.meeting = 'failed';
   if (S.q.work === 'active') S.q.work = 'failed';
-  S.over = true;
+  S.over = true; S.f.endReason = reason;
   B = null; Q = []; modalOpen = false; $('modal').hidden = true;
   render(); save();
   showEnding(reason);
 }
 
+// Each quest that counts is worth 2 (1 if half-done); quests made moot by an event don't count.
+// Three bonus points: a gift for Mom, ending in a good mood, and doing two chores.
 function scoreDay() {
-  let s = Object.values(S.q).reduce((a, v) => a + PTS[v], 0);
-  if ((S.q.mom === 'done' || S.q.mom === 'partial') && giftScore() >= 2) s++;
-  if (S.st.mood >= 50) s++;
-  if (S.f.chores >= 2) s++;
-  return s;
+  const counted = Object.values(S.q).filter(v => v !== 'hidden' && v !== 'void');
+  let score = counted.reduce((a, v) => a + PTS[v], 0);
+  if ((S.q.mom === 'done' || S.q.mom === 'partial') && giftScore() >= 2) score++;
+  if (S.st.mood >= 50) score++;
+  if (S.f.chores >= 2) score++;
+  return { score, max: counted.length * 2 + 3 };
+}
+
+function eventLines() {
+  const f = S.f, out = [];
+  if (f.sick) out.push(f.wfh ? 'You worked from home, sick. Gary asked if you could "hop on video real quick" twice.' : 'You went in sick. Two people are going to get it.');
+  if (f.lie) out.push({ grandma: 'Your grandmother is alive and well. The sympathy card is in your bag. You will have to keep this going for a while.',
+    mugged: 'HR emailed asking for a police report number "for our records."', hospital: 'Gary wants a doctor\'s note by Friday. You do not have a doctor.' }[f.lie]);
+  if (f.envied) out.push('Being praised in front of everyone cost you a lunch invite and some goodwill. It did not come with money.');
+  if (f.jealous) out.push('Gary feels threatened by you now. That will be a problem for the rest of your time here.');
+  if (f.raise) out.push({ soon: 'The raise is "in the pipeline." It has been in the pipeline since June.',
+    tight: 'There is no raise. Gary\'s new watch is very nice.', skipped: 'You didn\'t ask about the raise. Maybe Thursday.' }[f.raise]);
+  if (f.anxious) out.push('The layoffs are still "maybe." You\'ll find out the way everyone does: a 15-minute meeting with HR on a Friday.');
+  if (f.dei) out.push({ went: 'You went to your Belonging Breakout. You filled out the survey about it.',
+    asked: 'HR is "taking the feedback back to the team." The team is Denise.', skipped: 'You skipped the Belonging Breakout. The 41-slide deck is still unread.' }[f.dei]);
+  if (f.marcy) out.push(f.marcy === 'helped' ? 'You helped Marcy. She brought you a coffee on Wednesday.' : 'You stayed out of Marcy\'s situation. Dale got the thank-you card.');
+  if (f.snapped) out.push('You told your coworkers you were "FINE." They will be careful around you for about a week.');
+  if (f.vented) out.push('You admitted you weren\'t okay. Nothing bad happened.');
+  if (f.mixer) out.push(f.mixer === 'went' ? 'You went to the mixer and talked to the same people you talk to every day, only louder.' : 'You skipped the mixer. Someone noticed. Gary.');
+  if (f.drunkDale) out.push(f.drunkDale === 'listened' ? 'You know a lot about Dale\'s divorce now. He knows you know. Neither of you will ever mention it.' : 'You escaped Dale at the mixer. He cried to the bartender instead.');
+  if (f.lotto) out.push({ quiet: 'You have $98 million and nobody knows. Tomorrow you call a lawyer. Tonight you set your alarm for 6:30 anyway.',
+    told: 'Everyone knows you won the lottery. You have 41 new friends, and Dale has sent you a Venmo request.',
+    quit: 'You quit your job because you have $98 million. You will never see the printer again.' }[f.lotto]);
+  if (f.quit === 'rage') out.push('Wednesday, 8:58 AM. You badge in. It still works. The stapler is back on your desk. Gary says "Morning." You say "Morning." Nobody mentions it, then or ever.');
+  return out;
 }
 
 function showEnding(reason) {
-  const score = scoreDay();
+  const { score, max } = scoreDay();
+  const r = score / max;
   const tiers = [
-    [13, 'A Good Day', 'Nothing about today will be remembered by anyone, including you. That\'s what a good Tuesday is.'],
-    [9, 'A Fine Day', 'Some things got done. Some things got moved to tomorrow. Tomorrow is also a day.'],
-    [5, 'A Day', 'It happened. You were there for most of it.'],
+    [0.85, 'A Good Day', 'Nothing about today will be remembered by anyone, including you. That\'s what a good Tuesday is.'],
+    [0.6, 'A Fine Day', 'Some things got done. Some things got moved to tomorrow. Tomorrow is also a day.'],
+    [0.33, 'A Day', 'It happened. You were there for most of it.'],
     [0, 'One of Those Days', 'You\'ll tell someone about today eventually. It\'ll be funnier then.'],
   ];
-  const [, title, line] = tiers.find(t => score >= t[0]);
+  const [, title, line] = tiers.find(t => r >= t[0]);
   const opener = reason === 'bed'
     ? `You get into bed at ${fmt(S.t)}. You check your phone one last time, which turns into twenty minutes.`
     : 'It\'s midnight. You fall asleep on the couch with the TV asking if you\'re still watching.';
   const epi = {
-    work: { done: 'You got to work on time. Nobody noticed. Perfect.', partial: 'You got to work late. Gary "flagged" it.', failed: 'You never made it to the office. There will be an email about this.' },
+    work: { done: S.f.wfh ? 'You logged on from home by nine and stayed visibly green on Slack.' : 'You got to work on time. Nobody noticed. Perfect.',
+      partial: S.f.excused ? 'You got to work late, with an excuse nobody can question.' : 'You got to work late. Gary "flagged" it.', failed: 'You never made it to the office. There will be an email about this.' },
     meeting: { done: 'You survived the 3 PM meeting with no action items.', partial: 'You survived the 3 PM meeting, with two action items.', failed: 'You missed the 3 PM meeting. Someone took notes. Nobody will read them.' },
-    report: { done: 'The Q3 report was on Gary\'s chair by five.', partial: 'The Q3 report was late, but it exists.', failed: 'The Q3 report is still a file called "Q3_FINAL_v2_actualfinal.xlsx".' },
+    report: { done: 'The Q3 report was in Gary\'s hands by five.', partial: 'The Q3 report was late, but it exists.', failed: 'The Q3 report is still a file called "Q3_FINAL_v2_actualfinal.xlsx".' },
+    tasks: { done: 'You figured out all three delegated tasks. They are your job now.', partial: `You figured out ${S.f.tasksDone} of the three delegated tasks. Nobody explained any of them.`, failed: 'You didn\'t crack any of the delegated tasks. Neither would Gary.' },
+    forecast: { done: 'The VP got her Q4 forecast by six. Gary presented it.', failed: 'The Q4 forecast wasn\'t done by six. The VP noticed. So did Gary.' },
     dinner: { done: 'You cooked dinner. The salad will go bad on Friday.', partial: 'You ordered delivery. The groceries are a problem for tomorrow.', failed: 'Dinner was whatever was around. There wasn\'t much around.' },
     mom: { done: giftScore() >= 2 ? 'You called Mom and had something to tell her about. She told your aunt.' : 'You called Mom. She was glad you called.', partial: 'You left Mom a voicemail. She\'ll call back tomorrow and mention it.', failed: 'You didn\'t call Mom on her birthday. Your sister will bring it up at Thanksgiving.' },
     bed: { done: 'You were in bed before midnight.', partial: '', failed: 'You did not make it to bed.' },
   };
-  const box = st => st === 'done' ? '✓' : st === 'partial' ? '~' : '×';
-  const rows = Object.keys(QUESTS).map(k => `<li class="${S.q[k]}"><span class="qbox">${box(S.q[k])}</span><span>${esc(epi[k][S.q[k]] || '')}</span></li>`).join('');
+  const box = st => st === 'done' ? '✓' : st === 'partial' ? '~' : st === 'void' ? '–' : '×';
+  const rows = Object.keys(QUESTS).filter(k => S.q[k] !== 'hidden').map(k => {
+    const text = S.q[k] === 'void' ? `${qTitle(k)}: not your problem anymore.` : epi[k][S.q[k]] || '';
+    return `<li class="${S.q[k]}"><span class="qbox">${box(S.q[k])}</span><span>${esc(text)}</span></li>`;
+  }).join('');
+  const extras = eventLines();
+  const seen = seenSet();
+  const todays = S.f.events.map(id => EVENTS[id].name);
   const el = $('screen');
   el.innerHTML = `<div class="win title-card" role="dialog" aria-modal="true" aria-labelledby="etitle">
     <div class="win-h"><h2>End of Day</h2><span class="label">Tuesday, Oct 20</span></div>
@@ -1040,8 +1559,11 @@ function showEnding(reason) {
       <p class="ending-title" id="etitle">${title}</p>
       <p style="margin:0">${esc(line)}</p>
       <ul class="epi quests">${rows}</ul>
+      ${extras.length ? `<div class="label">Also today</div><ul class="epi">${extras.map(x => `<li><span>·</span><span>${esc(x)}</span></li>`).join('')}</ul>` : ''}
       <div class="receipt">
-        <div><span>Score</span><span>${score} / 15</span></div>
+        <div><span>Score</span><span>${score} / ${max}</span></div>
+        <div><span>Today's events</span><span>${todays.length ? esc(todays.join(', ')) : 'None. A normal Tuesday.'}</span></div>
+        <div><span>Events discovered</span><span>${EVENT_IDS.filter(id => seen.has(id)).length} / ${EVENT_IDS.length}</span></div>
         <div><span>Level reached</span><span>${S.lvl} · ${TITLES[S.lvl - 1]}</span></div>
         <div><span>Encounters won / endured</span><span>${S.f.won} / ${S.f.lost}</span></div>
         <div><span>Coffees</span><span>${S.f.coffees}</span></div>
@@ -1053,11 +1575,43 @@ function showEnding(reason) {
         <div><span>Left in account</span><span>${money(S.money)}</span></div>
       </div>
       <p class="hint" style="margin:0">Tomorrow is Wednesday. It will be a lot like this.</p>
-      <button class="btn" id="again">Start Tuesday over</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="again">Start Tuesday over</button>
+        <button class="btn" id="againPick">Choose the events</button>
+      </div>
     </div></div>`;
   el.hidden = false;
   $('again').onclick = () => { clearSave(); el.hidden = true; newGame(); };
+  $('againPick').onclick = () => showPicker(false);
   $('again').focus();
+}
+
+function showPicker(hasSave) {
+  const el = $('screen');
+  const seen = seenSet();
+  el.innerHTML = `<div class="win title-card" role="dialog" aria-modal="true" aria-labelledby="ptitle">
+    <div class="win-h"><h2 id="ptitle">Choose Today's Events</h2><span class="label">${EVENT_IDS.filter(id => seen.has(id)).length} / ${EVENT_IDS.length} discovered</span></div>
+    <div class="win-b" style="gap:12px">
+      <p style="margin:0">Pick any mix. Some can't happen on the same day: picking one unpicks the other.</p>
+      <div class="picker">${EVENT_IDS.map(id => `<label class="pick" for="ev-${id}"><input type="checkbox" id="ev-${id}" value="${id}"><span>${esc(EVENTS[id].name)}${seen.has(id) ? ' <span class="tag">· seen</span>' : ''}<small>${esc(EVENTS[id].blurb)}</small></span></label>`).join('')}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="pickGo">Start with these</button>
+        <button class="btn" id="pickBack">Back</button>
+      </div>
+    </div></div>`;
+  el.hidden = false;
+  const box = id => $('ev-' + id);
+  for (const id of EVENT_IDS) box(id).onchange = () => {
+    if (!box(id).checked) { if (id === 'mixer') box('drunk').checked = false; return; }
+    for (const pair of EXCLUSIVE) if (pair.includes(id)) pair.filter(o => o !== id).forEach(o => { box(o).checked = false; });
+    if (id === 'drunk') box('mixer').checked = true;
+  };
+  $('pickGo').onclick = () => {
+    const ids = EVENT_IDS.filter(id => box(id).checked);
+    clearSave(); el.hidden = true; newGame(ids);
+  };
+  $('pickBack').onclick = () => S.over ? showEnding(S.f.endReason) : showTitle(hasSave);
+  $('pickGo').focus();
 }
 
 /* ---------- Title & start ---------- */
@@ -1073,22 +1627,28 @@ function showTitle(hasSave) {
         <li>Finish the quests on the left before their deadlines. The day ends at midnight.</li>
         <li>Some people and machines will start an encounter. Use the right skill: nodding doesn't work on printers.</li>
         <li>Nothing ends the game early. Running out of something just makes the day worse.</li>
+        <li>Every Tuesday rolls a few random events. There are ${EVENT_IDS.length} to find, and you've seen ${EVENT_IDS.filter(id => seenSet().has(id)).length}.</li>
       </ul>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         ${hasSave ? '<button class="btn" id="cont">Continue your day</button>' : ''}
         <button class="btn" id="start">${hasSave ? 'Start over' : 'Wake up'}</button>
+        <button class="btn" id="pick">Choose the events</button>
       </div>
     </div></div>`;
   el.hidden = false;
+  $('pick').onclick = () => showPicker(hasSave);
   if (hasSave) $('cont').onclick = () => { el.hidden = true; render(); };
   $('start').onclick = () => { clearSave(); el.hidden = true; newGame(); };
   ($('cont') || $('start')).focus();
 }
 
-function newGame() {
+function newGame(chosen) {
   S = fresh(); B = null; Q = []; P = {}; modalOpen = false;
+  S.ev = rollEvents(chosen);
   render();
-  alarm();
+  if (hasEvent('sick')) sickMorning();
+  else if (hasEvent('late')) lateMorning();
+  else alarm();
 }
 function alarm() {
   const n = S.f.snoozes;
@@ -1130,6 +1690,7 @@ function render() {
   const span = DAY_END - DAY_START;
   const pos = t => ((t - DAY_START) / span * 100).toFixed(2) + '%';
   const marks = [[540, '9a', 'work', 1], [720, '12p', '', 0], [900, '3p', 'meeting', 1], [1020, '5p', 'report', 1], [1260, '9p', 'Mom', S.q.mom !== 'hidden' ? 1 : 0]];
+  if (S.q.forecast !== 'hidden') marks.splice(4, 0, [1080, '6p', 'forecast', 1]);
   $('timeline').innerHTML = `<div class="fill" style="width:${pos(S.t)}"></div>` +
     marks.map(m => `<div class="mark ${m[3] ? 'due' : 'minor'}" style="left:${pos(m[0])}"><span>${m[1]}${m[2] ? `<em style="font-style:normal"> · ${m[2]}</em>` : ''}</span></div>`).join('');
 
@@ -1143,8 +1704,8 @@ function render() {
 
   $('quests').innerHTML = Object.keys(QUESTS).filter(k => S.q[k] !== 'hidden').map(k => {
     const st = S.q[k];
-    const box = st === 'done' ? '✓' : st === 'failed' ? '×' : st === 'partial' ? '~' : '';
-    return `<li class="${st}"><span class="qbox">${box}</span><span><span class="qt">${QUESTS[k].title}</span>${st === 'active' ? `<small>${esc(QUESTS[k].hint())}</small>` : ''}</span></li>`;
+    const box = st === 'done' ? '✓' : st === 'failed' ? '×' : st === 'partial' ? '~' : st === 'void' ? '–' : '';
+    return `<li class="${st}"><span class="qbox">${box}</span><span><span class="qt">${esc(qTitle(k))}</span>${st === 'active' ? `<small>${esc(QUESTS[k].hint())}</small>` : ''}</span></li>`;
   }).join('');
 
   const inv = Object.keys(S.inv);
@@ -1171,7 +1732,8 @@ function renderScene() {
   if (!L) { el.innerHTML = '<div class="win-b"><p>In transit.</p></div>'; return; }
   const open = isOpen(S.loc);
   const acts = ACTIONS[S.loc]();
-  const closedMsg = !open ? `<p class="scene-desc"><b>Closed.</b> Hours: ${L.hours}. You can still leave.</p>` : '';
+  const closedMsg = !open ? `<p class="scene-desc"><b>Closed.</b> Hours: ${L.hours}. You can still leave.</p>`
+    : S.loc === 'office' && S.f.quit ? `<p class="scene-desc"><b>${S.f.quit === 'rage' ? 'You quit today. Loudly.' : 'You quit. You have $98 million.'}</b> There's nothing for you to do here${S.f.quit === 'rage' ? ' until tomorrow' : ''}.</p>` : '';
   el.innerHTML = `<div class="win-h"><h2>Location</h2><span class="label">${L.zone === 'home' ? 'Your neighborhood' : 'Downtown'}</span></div>
     <div class="win-b">
       <h1 class="scene-title">${esc(L.name)}</h1>
@@ -1246,7 +1808,8 @@ function renderBattle() {
 function start(data) {
   const saved = (data && data.S) || loadSave();
   if (saved && saved.started && !saved.over) {
-    S = Object.assign(fresh(), saved);
+    const base = fresh();
+    S = Object.assign(base, saved, { f: Object.assign(base.f, saved.f), q: Object.assign(base.q, saved.q) });
     render();
     if (data && data.S) return;
     showTitle(true);
