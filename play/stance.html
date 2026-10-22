@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stance</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f2ee;
+  --card: #ffffff;
+  --ink: #1d1f24;
+  --muted: #6b6f78;
+  --line: #e2dfd8;
+  --accent: #3b3f8f;
+  --yes: #3b3f8f;
+  --no: #4a4e57;
+  --dem: #2f5fb3;
+  --rep: #c0392b;
+  --lib: #d4a017;
+  --grn: #3e8e4a;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+}
+.wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 32px; min-height: 100%; display: flex; flex-direction: column; }
+.screen { display: none; flex: 1; flex-direction: column; }
+.screen.on { display: flex; }
+h1 { font-size: 34px; line-height: 1.1; margin: 28px 0 12px; letter-spacing: -0.02em; }
+h2 { font-size: 20px; margin: 28px 0 12px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.btn {
+  appearance: none; border: 0; border-radius: 12px; font: inherit; font-weight: 600;
+  padding: 16px 20px; cursor: pointer; width: 100%;
+  background: var(--ink); color: #fff;
+}
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn:active { transform: scale(0.98); }
+.topics { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 28px; padding: 0; list-style: none; }
+.topics li { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+.spacer { flex: 1; }
+.stack > * + * { margin-top: 10px; }
+
+/* Quiz */
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .25s ease; }
+.qhead { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 0; font-size: 14px; }
+.chip { color: var(--accent); font-weight: 600; }
+.qcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 20px; margin: 18px 0; }
+.qtext { font-size: 22px; line-height: 1.3; font-weight: 600; margin: 0 0 14px; }
+.qctx { color: var(--muted); font-size: 14px; margin: 0; }
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.answers .btn { padding: 20px; font-size: 18px; }
+.btn.yes { background: var(--yes); }
+.btn.no { background: var(--no); }
+.btn.sel { outline: 3px solid var(--ink); outline-offset: 2px; }
+.back { background: none; border: 0; color: var(--muted); font: inherit; padding: 14px 0; cursor: pointer; align-self: flex-start; }
+.back[disabled] { visibility: hidden; }
+
+/* Results */
+.hero { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 20px; margin-top: 16px; }
+.hero .label { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 6px; }
+.hero .name { font-size: 28px; font-weight: 700; line-height: 1.15; }
+.hero .party { font-weight: 600; margin: 6px 0 12px; }
+.hero .pct { font-size: 15px; }
+.hero .examples { font-size: 15px; }
+.rows { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 16px; }
+.row { padding: 12px 0; border-top: 1px solid var(--line); }
+.row:first-child { border-top: 0; }
+.row .top { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.row .top b { font-weight: 600; }
+.row .meter { height: 8px; background: var(--line); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+.row .meter > i { display: block; height: 100%; border-radius: 4px; }
+.row .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+details { margin-top: 28px; }
+summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
+.review { list-style: none; padding: 0; margin: 8px 0 0; }
+.review li { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; font-size: 14px; }
+.review .ans { font-weight: 700; }
+.review .ans.y { color: var(--yes); }
+.review .ans.n { color: var(--no); }
+.note { font-size: 13px; color: var(--muted); margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="screen on" id="intro">
+    <h1>Where do you stand?</h1>
+    <p>Answer 27 yes-or-no questions on today's big issues. We'll show which US party and which kind of politician your views line up with most.</p>
+    <ul class="topics" id="topicList"></ul>
+    <p class="muted small">There are no right answers. Your answers stay on this device.</p>
+    <div class="spacer"></div>
+    <div class="stack">
+      <button class="btn" id="startBtn">Start</button>
+      <button class="btn ghost" id="resumeBtn" hidden>Resume where you left off</button>
+    </div>
+  </section>
+
+  <section class="screen" id="quiz">
+    <div class="bar"><i id="progress"></i></div>
+    <div class="qhead">
+      <span class="chip" id="qTopic"></span>
+      <span class="muted" id="qCount"></span>
+    </div>
+    <div class="qcard">
+      <p class="qtext" id="qText"></p>
+      <p class="qctx" id="qCtx"></p>
+    </div>
+    <div class="answers">
+      <button class="btn yes" data-a="1">Yes</button>
+      <button class="btn no" data-a="-1">No</button>
+    </div>
+    <button class="back" id="backBtn">&larr; Previous question</button>
+  </section>
+
+  <section class="screen" id="results">
+    <div class="hero">
+      <div class="label">You align most with</div>
+      <div class="name" id="topName"></div>
+      <div class="party" id="topParty"></div>
+      <p class="muted" id="topBlurb"></p>
+      <p class="examples"><span class="muted">Politicians like this:</span> <b id="topExamples"></b></p>
+      <div class="pct" id="topPct"></div>
+    </div>
+
+    <h2>Parties</h2>
+    <div class="rows" id="partyRows"></div>
+
+    <h2>Politician types</h2>
+    <div class="rows" id="archRows"></div>
+
+    <h2>By topic</h2>
+    <div class="rows" id="topicRows"></div>
+
+    <details>
+      <summary>Review your answers</summary>
+      <ul class="review" id="review"></ul>
+    </details>
+
+    <p class="note">Politician types are broad generalizations of where each wing of a party usually stands. The example politicians are well-known figures associated with each wing, but no one matches their type on every issue. This quiz isn't affiliated with any party or candidate. Party scores show how closely you match that party's closest wing.</p>
+    <div class="stack" style="margin-top:16px">
+      <button class="btn" id="retakeBtn">Retake the quiz</button>
+    </div>
+  </section>
+
+</div>
+<script>
+const PARTIES = {
+  D: { name: 'Democratic Party', color: 'var(--dem)' },
+  R: { name: 'Republican Party', color: 'var(--rep)' },
+  L: { name: 'Libertarian Party', color: 'var(--lib)' },
+  G: { name: 'Green Party', color: 'var(--grn)' },
+};
+
+// Column order of every question's positions below.
+const ARCH = [
+  { name: 'Progressive Democrat', examples: 'Bernie Sanders, Alexandria Ocasio-Cortez, Elizabeth Warren', party: 'D', blurb: 'Wants bold government action on healthcare, wages and climate, funded by taxing the wealthy and corporations.' },
+  { name: 'Mainstream Democrat', examples: 'Kamala Harris, Hakeem Jeffries, Chuck Schumer', party: 'D', blurb: 'Supports expanding the safety net and protecting rights, but prefers building on existing programs over sweeping overhauls.' },
+  { name: 'Moderate Democrat', examples: 'Jared Golden, Marie Gluesenkamp Perez, Jon Tester', party: 'D', blurb: 'Socially moderate-to-liberal and fiscally cautious; open to energy production, gun rights and tighter budgets.' },
+  { name: 'Green', examples: 'Jill Stein, Howie Hawkins', party: 'G', blurb: 'Puts the environment, economic justice and grassroots democracy first; skeptical of both corporate power and free trade.' },
+  { name: 'Moderate Republican', examples: 'Susan Collins, Lisa Murkowski, Brian Fitzpatrick', party: 'R', blurb: 'Favors lower spending and secure borders, but is pragmatic and often a swing vote on social issues.' },
+  { name: 'Traditional Conservative', examples: 'Mitch McConnell, Mike Pence, Nikki Haley', party: 'R', blurb: 'Free markets, limited government, a strong military and traditional social values.' },
+  { name: 'America First Republican', examples: 'Donald Trump, JD Vance, Josh Hawley', party: 'R', blurb: 'Populist conservative: tough on immigration and trade, protective of workers and entitlements, skeptical of elites.' },
+  { name: 'Libertarian', examples: 'Chase Oliver, Gary Johnson, Rand Paul (R)', party: 'L', blurb: 'Wants government out of both the economy and personal life: low taxes, free trade, gun rights and civil liberties.' },
+];
+
+const TOPICS = [
+  'Inflation & wages', 'Home ownership', 'Jobs & unemployment', 'Immigration & border',
+  'Healthcare', 'Climate & environment', 'Abortion & reproductive rights',
+  'Identity & inclusion', 'Gun control & safety',
+];
+
+// p: each politician type's answer in ARCH order. 1 = yes, -1 = no, 0 = divided or no clear position.
+const QUESTIONS = [
+  { t: 0, q: 'Should the federal minimum wage be raised to $15 an hour?',
+    c: 'The federal minimum has been $7.25 since 2009. Many states set a higher one.',
+    p: [1, 1, 0, 1, -1, -1, 0, -1] },
+  { t: 0, q: 'Should federal spending be cut to bring down inflation?',
+    c: 'Less government spending can cool demand, but it can also mean cuts to programs and services.',
+    p: [-1, -1, 1, -1, 1, 1, 1, 1] },
+  { t: 0, q: 'Should the US raise tariffs on imports to protect American jobs, even if prices go up?',
+    c: 'Tariffs are taxes on imported goods. Importers pay them, and part of the cost is usually passed on to buyers.',
+    p: [0, -1, -1, 1, -1, -1, 1, -1] },
+
+  { t: 1, q: 'Should the government give first-time homebuyers help with their down payment, such as $25,000?',
+    c: 'Saving for a down payment is one of the biggest obstacles for first-time buyers.',
+    p: [1, 1, 1, 0, 0, -1, 0, -1] },
+  { t: 1, q: 'Should zoning rules be loosened so more apartments and townhomes can be built in single-family neighborhoods?',
+    c: 'In many US cities, most residential land is zoned for detached single-family homes only.',
+    p: [1, 1, 1, 0, 1, 0, -1, 1] },
+  { t: 1, q: 'Should large investment firms be banned from buying up single-family homes?',
+    c: 'In some metro areas, institutional investors own a growing share of single-family homes, mostly as rentals.',
+    p: [1, 1, 0, 1, -1, -1, 1, -1] },
+
+  { t: 2, q: 'Should unemployment benefits be extended beyond the usual 26 weeks during recessions?',
+    c: 'Most states pay benefits for up to 26 weeks. Congress has extended them in past downturns.',
+    p: [1, 1, 1, 1, 0, -1, -1, -1] },
+  { t: 2, q: 'Should able-bodied adults on food stamps or Medicaid be required to work or look for work?',
+    c: 'Some programs already have work requirements, and there are proposals to expand them.',
+    p: [-1, -1, 0, -1, 1, 1, 1, 1] },
+  { t: 2, q: 'Should it be made easier for workers to form unions?',
+    c: 'Proposals like the PRO Act would override state "right-to-work" laws and add penalties for employers who interfere with organizing.',
+    p: [1, 1, 1, 1, -1, -1, 0, -1] },
+
+  { t: 3, q: 'Should undocumented immigrants who have lived in the US for many years have a path to citizenship?',
+    c: 'An estimated 11 to 14 million undocumented immigrants live in the US, many of them for over a decade.',
+    p: [1, 1, 1, 1, 1, -1, -1, 1] },
+  { t: 3, q: 'Should the US carry out large-scale deportations of people living here illegally?',
+    c: 'Supporters point to the rule of law. Opponents point to the cost, labor shortages and families being split up.',
+    p: [-1, -1, -1, -1, -1, 1, 1, -1] },
+  { t: 3, q: 'Should the US finish building a wall along the southern border?',
+    c: 'Barriers currently cover roughly a third of the 1,950-mile border with Mexico.',
+    p: [-1, -1, 0, -1, 1, 1, 1, -1] },
+
+  { t: 4, q: 'Should the US replace private health insurance with a single government plan that covers everyone (Medicare for All)?',
+    c: 'A single-payer system is paid for through taxes instead of premiums, deductibles and copays.',
+    p: [1, -1, -1, 1, -1, -1, -1, -1] },
+  { t: 4, q: 'Should the Affordable Care Act (Obamacare) be repealed and replaced?',
+    c: 'The ACA protects people with pre-existing conditions and funds marketplace subsidies and the Medicaid expansion.',
+    p: [-1, -1, -1, -1, -1, 1, 1, 1] },
+  { t: 4, q: 'Should Medicare negotiate prescription drug prices directly with drug companies?',
+    c: 'A 2022 law allowed Medicare to negotiate prices for a limited number of drugs.',
+    p: [1, 1, 1, 1, 0, -1, 1, -1] },
+
+  { t: 5, q: 'Should the US aim to produce all of its electricity without carbon emissions by 2035?',
+    c: 'Electricity generation produces about a quarter of US greenhouse gas emissions.',
+    p: [1, 1, -1, 1, -1, -1, -1, -1] },
+  { t: 5, q: 'Should the government expand oil and gas drilling on federal lands and offshore?',
+    c: 'Federal lands and waters produce about a quarter of US oil.',
+    p: [-1, -1, 1, -1, 1, 1, 1, 1] },
+  { t: 5, q: 'Should the US rejoin and stay in international climate agreements like the Paris Agreement?',
+    c: 'The US has withdrawn from the Paris Agreement twice. The most recent withdrawal took effect in January 2026.',
+    p: [1, 1, 1, 1, 0, -1, -1, -1] },
+
+  { t: 6, q: 'Should abortion be legal in all or most cases?',
+    c: 'Since Roe v. Wade was overturned in 2022, each state has set its own abortion laws.',
+    p: [1, 1, 1, 1, 0, -1, -1, 0] },
+  { t: 6, q: 'Should there be a nationwide ban on abortion after 15 weeks of pregnancy?',
+    c: 'Most US abortions happen before 13 weeks. A national ban would override state laws.',
+    p: [-1, -1, -1, -1, -1, 1, 0, -1] },
+  { t: 6, q: 'Should the abortion pill mifepristone be restricted so it can no longer be prescribed by telehealth and mailed?',
+    c: 'Mifepristone, approved by the FDA in 2000, is used in most US abortions today.',
+    p: [-1, -1, -1, -1, 0, 1, 0, -1] },
+
+  { t: 7, q: 'Should the federal government ban diversity, equity and inclusion (DEI) programs at its agencies and contractors?',
+    c: 'An executive order did this in 2025. A future administration could reverse it.',
+    p: [-1, -1, -1, -1, 0, 1, 1, 1] },
+  { t: 7, q: 'Should federal law ban discrimination based on sexual orientation and gender identity in housing, public places and services?',
+    c: 'Federal law already protects LGBTQ workers from job discrimination. The proposed Equality Act would extend that protection to other areas.',
+    p: [1, 1, 1, 1, 0, -1, -1, 0] },
+  { t: 7, q: 'Should transgender girls be barred from competing on girls’ school sports teams?',
+    c: 'More than 25 states have passed laws like this.',
+    p: [-1, -1, 0, -1, 1, 1, 1, 0] },
+
+  { t: 8, q: 'Should background checks be required for all gun sales, including private sales?',
+    c: 'Licensed dealers must run background checks. In many states, private sellers don’t have to.',
+    p: [1, 1, 1, 1, 1, -1, -1, -1] },
+  { t: 8, q: 'Should adults be allowed to carry a concealed handgun without a permit?',
+    c: 'More than half of states already allow permitless carry.',
+    p: [-1, -1, -1, -1, 0, 1, 1, 1] },
+  { t: 8, q: 'Should assault-style weapons be banned?',
+    c: 'A federal ban on many of these weapons was in effect from 1994 to 2004.',
+    p: [1, 1, 0, 1, -1, -1, -1, -1] },
+];
+
+const KEY = 'stance.answers.v1';
+let answers = load();
+let idx = 0;
+
+function load() {
+  try {
+    const a = JSON.parse(localStorage.getItem(KEY));
+    if (Array.isArray(a) && a.length === QUESTIONS.length) return a;
+  } catch (e) {}
+  return new Array(QUESTIONS.length).fill(0);
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) {}
+}
+
+const $ = id => document.getElementById(id);
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  window.scrollTo(0, 0);
+}
+
+// Agreement with a politician type: 1 per matching answer, 0.5 where its position is divided.
+function agreement(arch, qs) {
+  let pts = 0;
+  qs.forEach(i => {
+    const pos = QUESTIONS[i].p[arch];
+    pts += pos === 0 ? 0.5 : (pos === answers[i] ? 1 : 0);
+  });
+  return qs.length ? pts / qs.length : 0;
+}
+const pct = x => Math.round(x * 100) + '%';
+const dot = party => `<span class="dot" style="background:${PARTIES[party].color}"></span>`;
+function meter(x, color) {
+  return `<div class="meter"><i style="width:${x * 100}%;background:${color}"></i></div>`;
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[idx];
+  $('progress').style.width = (idx / QUESTIONS.length * 100) + '%';
+  $('qTopic').textContent = TOPICS[q.t];
+  $('qCount').textContent = `${idx + 1} of ${QUESTIONS.length}`;
+  $('qText').textContent = q.q;
+  $('qCtx').textContent = q.c;
+  document.querySelectorAll('.answers .btn').forEach(b =>
+    b.classList.toggle('sel', +b.dataset.a === answers[idx]));
+  $('backBtn').disabled = idx === 0;
+}
+
+function answer(a) {
+  answers[idx] = a;
+  save();
+  const next = answers.findIndex(x => x === 0);
+  if (next === -1) { renderResults(); show('results'); return; }
+  idx = idx + 1 < QUESTIONS.length && answers[idx + 1] === 0 ? idx + 1 : next;
+  renderQuestion();
+}
+
+function renderResults() {
+  const all = QUESTIONS.map((_, i) => i);
+  const arch = ARCH.map((a, i) => ({ ...a, score: agreement(i, all) }))
+    .sort((a, b) => b.score - a.score);
+  const best = arch[0];
+
+  $('topName').textContent = best.name;
+  $('topParty').innerHTML = dot(best.party) + PARTIES[best.party].name;
+  $('topParty').style.color = PARTIES[best.party].color;
+  $('topBlurb').textContent = best.blurb;
+  $('topExamples').textContent = best.examples;
+  $('topPct').innerHTML = `<b>${pct(best.score)}</b> agreement across ${QUESTIONS.length} questions`;
+
+  const parties = Object.keys(PARTIES).map(k => {
+    const wing = arch.find(a => a.party === k);
+    return { k, score: wing.score, wing: wing.name };
+  }).sort((a, b) => b.score - a.score);
+  $('partyRows').innerHTML = parties.map(p => `
+    <div class="row">
+      <div class="top"><b>${dot(p.k)}${PARTIES[p.k].name}</b><span>${pct(p.score)}</span></div>
+      ${meter(p.score, PARTIES[p.k].color)}
+      ${ARCH.filter(a => a.party === p.k).length > 1 ? `<div class="sub">Closest wing: ${p.wing}</div>` : ''}
+    </div>`).join('');
+
+  $('archRows').innerHTML = arch.map(a => `
+    <div class="row">
+      <div class="top"><b>${dot(a.party)}${a.name}</b><span>${pct(a.score)}</span></div>
+      ${meter(a.score, PARTIES[a.party].color)}
+      <div class="sub">e.g. ${a.examples}</div>
+    </div>`).join('');
+
+  $('topicRows').innerHTML = TOPICS.map((t, ti) => {
+    const qs = all.filter(i => QUESTIONS[i].t === ti);
+    const scored = ARCH.map((a, i) => ({ ...a, score: agreement(i, qs) }));
+    const top = Math.max(...scored.map(s => s.score));
+    const leaders = scored.filter(s => s.score === top);
+    const names = leaders.length > 3
+      ? `${leaders.length} types tie`
+      : leaders.map(l => dot(l.party) + l.name).join(', ');
+    return `<div class="row">
+      <div class="top"><b>${t}</b><span>${pct(top)}</span></div>
+      <div class="sub">${names}</div>
+    </div>`;
+  }).join('');
+
+  $('review').innerHTML = QUESTIONS.map((q, i) => {
+    const agree = ARCH.filter((a, ai) => q.p[ai] === answers[i]).map(a => a.name);
+    return `<li>${q.q}<br>
+      <span class="ans ${answers[i] === 1 ? 'y' : 'n'}">${answers[i] === 1 ? 'Yes' : 'No'}</span>
+      <span class="muted"> &middot; ${agree.length ? 'Agrees with: ' + agree.join(', ') : 'No type takes this side outright'}</span></li>`;
+  }).join('');
+}
+
+// Called by the Android back button. Returns true if the page handled it.
+window.onAndroidBack = function () {
+  if ($('quiz').classList.contains('on')) {
+    if (idx > 0) { idx--; renderQuestion(); } else show('intro');
+    return true;
+  }
+  if ($('results').classList.contains('on')) { show('intro'); refreshIntro(); return true; }
+  return false;
+};
+
+function refreshIntro() {
+  const done = answers.filter(a => a !== 0).length;
+  $('resumeBtn').hidden = done === 0;
+  $('resumeBtn').textContent = done === QUESTIONS.length ? 'See your results' : `Resume (${done} of ${QUESTIONS.length} answered)`;
+  $('startBtn').textContent = done ? 'Start over' : 'Start';
+}
+
+$('topicList').innerHTML = TOPICS.map(t => `<li>${t}</li>`).join('');
+$('startBtn').onclick = () => {
+  answers = new Array(QUESTIONS.length).fill(0); save();
+  idx = 0; renderQuestion(); show('quiz');
+};
+$('resumeBtn').onclick = () => {
+  const next = answers.findIndex(x => x === 0);
+  if (next === -1) { renderResults(); show('results'); }
+  else { idx = next; renderQuestion(); show('quiz'); }
+};
+$('retakeBtn').onclick = $('startBtn').onclick;
+$('backBtn').onclick = () => { if (idx > 0) { idx--; renderQuestion(); } };
+document.querySelectorAll('.answers .btn').forEach(b => b.onclick = () => answer(+b.dataset.a));
+refreshIntro();
+</script>
+</body>
+</html>
