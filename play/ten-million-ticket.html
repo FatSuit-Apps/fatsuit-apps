@@ -212,6 +212,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .cmp td.ev{white-space:normal;min-width:190px;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
 .cmp .cur{background:var(--sunk)}
 .cmp thead th.cur{color:var(--ink)}
+@media (max-width:560px){.cmp th,.cmp td{padding:6px 8px}.cmp th:first-child{white-space:normal;min-width:104px}.cmp td.ev{min-width:150px}}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- End ---------- */
@@ -891,7 +892,8 @@ function render(){
   else if (S.screen === 'claim') $app.innerHTML = viewClaim();
   else if (S.screen === 'end') $app.innerHTML = viewEnd() + viewModal();
   else $app.innerHTML = viewPlay() + viewModal();
-  document.querySelectorAll('.cmp').forEach(c => { c.scrollLeft = c.scrollWidth; });   // open on the newest year
+  // Open each comparison on the newest year, lined up just right of the pinned row labels.
+  document.querySelectorAll('.cmp').forEach(c => { const th = c.querySelectorAll('thead th'); c.scrollLeft = th[th.length - 1].offsetLeft - th[0].offsetWidth; });
   save();
 }
 function viewTicket(){
