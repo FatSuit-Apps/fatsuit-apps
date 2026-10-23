@@ -117,11 +117,6 @@ button:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .quests li.partial .qbox { background: var(--warn); border-color: var(--warn); color: var(--panel); }
 .quests li.done .qt, .quests li.failed .qt, .quests li.void .qt { color: var(--muted); }
 .quests li.void .qbox { border-style: dashed; border-color: var(--muted); color: var(--muted); }
-.picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
-.pick { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; padding: 7px 9px; border: 2px solid var(--line); cursor: pointer; font-size: 13.5px; line-height: 1.35; }
-.pick:has(input:checked) { border-color: var(--ink); background: var(--panel-2); }
-.pick input { margin: 2px 0 0; width: 16px; height: 16px; accent-color: var(--ink); }
-.pick small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .receipt div span:last-child { text-align: right; }
 .quests li.failed .qt { text-decoration: line-through; }
 .quests small { display: block; color: var(--muted); font-size: 12px; }
@@ -467,20 +462,21 @@ const EVENTS = {
 const EVENT_IDS = Object.keys(EVENTS).filter(id => !EVENTS[id].internal);
 const EXCLUSIVE = [['sick', 'late'], ['praise', 'jealous']];
 
-function rollEvents(chosen) {
-  let ids = chosen;
-  if (!ids) {
-    ids = [];
-    const pool = EVENT_IDS.filter(id => id !== 'drunk').sort(() => Math.random() - 0.5);
-    const n = rand(4, 6);
-    for (const id of pool) {
-      if (ids.length >= n) break;
-      if (EXCLUSIVE.some(p => p.includes(id) && p.some(o => o !== id && ids.includes(o)))) continue;
-      ids.push(id);
-    }
-    if (ids.includes('mixer') && Math.random() < 0.6) ids.push('drunk');
+// A fresh random draw every new game. Events seen in earlier games can come up again.
+function rollEvents() {
+  const ids = [];
+  const pool = EVENT_IDS.filter(id => id !== 'drunk');
+  for (let i = pool.length - 1; i > 0; i--) {   // Fisher–Yates, so every event is equally likely
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  if (ids.includes('drunk') && !ids.includes('mixer')) ids.push('mixer');
+  const n = rand(4, 6);
+  for (const id of pool) {
+    if (ids.length >= n) break;
+    if (EXCLUSIVE.some(p => p.includes(id) && p.some(o => o !== id && ids.includes(o)))) continue;
+    ids.push(id);
+  }
+  if (ids.includes('mixer') && Math.random() < 0.6) ids.push('drunk');
   return ids.map(id => {
     const d = EVENTS[id];
     const at = d.at ?? (d.win ? rand(d.win[0], d.win[1] - 60) : 0);
@@ -1575,43 +1571,11 @@ function showEnding(reason) {
         <div><span>Left in account</span><span>${money(S.money)}</span></div>
       </div>
       <p class="hint" style="margin:0">Tomorrow is Wednesday. It will be a lot like this.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" id="again">Start Tuesday over</button>
-        <button class="btn" id="againPick">Choose the events</button>
-      </div>
+      <button class="btn" id="again">Start Tuesday over</button>
     </div></div>`;
   el.hidden = false;
   $('again').onclick = () => { clearSave(); el.hidden = true; newGame(); };
-  $('againPick').onclick = () => showPicker(false);
   $('again').focus();
-}
-
-function showPicker(hasSave) {
-  const el = $('screen');
-  const seen = seenSet();
-  el.innerHTML = `<div class="win title-card" role="dialog" aria-modal="true" aria-labelledby="ptitle">
-    <div class="win-h"><h2 id="ptitle">Choose Today's Events</h2><span class="label">${EVENT_IDS.filter(id => seen.has(id)).length} / ${EVENT_IDS.length} discovered</span></div>
-    <div class="win-b" style="gap:12px">
-      <p style="margin:0">Pick any mix. Some can't happen on the same day: picking one unpicks the other.</p>
-      <div class="picker">${EVENT_IDS.map(id => `<label class="pick" for="ev-${id}"><input type="checkbox" id="ev-${id}" value="${id}"><span>${esc(EVENTS[id].name)}${seen.has(id) ? ' <span class="tag">· seen</span>' : ''}<small>${esc(EVENTS[id].blurb)}</small></span></label>`).join('')}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn" id="pickGo">Start with these</button>
-        <button class="btn" id="pickBack">Back</button>
-      </div>
-    </div></div>`;
-  el.hidden = false;
-  const box = id => $('ev-' + id);
-  for (const id of EVENT_IDS) box(id).onchange = () => {
-    if (!box(id).checked) { if (id === 'mixer') box('drunk').checked = false; return; }
-    for (const pair of EXCLUSIVE) if (pair.includes(id)) pair.filter(o => o !== id).forEach(o => { box(o).checked = false; });
-    if (id === 'drunk') box('mixer').checked = true;
-  };
-  $('pickGo').onclick = () => {
-    const ids = EVENT_IDS.filter(id => box(id).checked);
-    clearSave(); el.hidden = true; newGame(ids);
-  };
-  $('pickBack').onclick = () => S.over ? showEnding(S.f.endReason) : showTitle(hasSave);
-  $('pickGo').focus();
 }
 
 /* ---------- Title & start ---------- */
@@ -1632,19 +1596,17 @@ function showTitle(hasSave) {
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         ${hasSave ? '<button class="btn" id="cont">Continue your day</button>' : ''}
         <button class="btn" id="start">${hasSave ? 'Start over' : 'Wake up'}</button>
-        <button class="btn" id="pick">Choose the events</button>
       </div>
     </div></div>`;
   el.hidden = false;
-  $('pick').onclick = () => showPicker(hasSave);
   if (hasSave) $('cont').onclick = () => { el.hidden = true; render(); };
   $('start').onclick = () => { clearSave(); el.hidden = true; newGame(); };
   ($('cont') || $('start')).focus();
 }
 
-function newGame(chosen) {
+function newGame() {
   S = fresh(); B = null; Q = []; P = {}; modalOpen = false;
-  S.ev = rollEvents(chosen);
+  S.ev = rollEvents();
   render();
   if (hasEvent('sick')) sickMorning();
   else if (hasEvent('late')) lateMorning();

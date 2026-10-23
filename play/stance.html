@@ -75,6 +75,10 @@ p { margin: 0 0 12px; }
 .hero .party { font-weight: 600; margin: 6px 0 12px; }
 .hero .pct { font-size: 15px; }
 .hero .examples { font-size: 15px; }
+.vote { background: #eceefa; border-left: 4px solid var(--accent); border-radius: 12px; padding: 16px 18px; margin-top: 16px; }
+.vote .label { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+.vote ol { margin: 0; padding-left: 20px; font-size: 15px; }
+.vote li + li { margin-top: 6px; }
 .rows { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 16px; }
 .row { padding: 12px 0; border-top: 1px solid var(--line); }
 .row:first-child { border-top: 0; }
@@ -92,6 +96,25 @@ summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
 .review .ans.y { color: var(--yes); }
 .review .ans.n { color: var(--no); }
 .note { font-size: 13px; color: var(--muted); margin-top: 24px; }
+.review .qnum { display: block; font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.print-only { display: none; }
+
+/* Save as PDF prints the results screen, with every answer listed. */
+@media print {
+  @page { margin: 14mm; }
+  :root { --bg: #fff; }
+  body { padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .wrap { max-width: none; padding: 0; }
+  .screen { display: none !important; }
+  #results { display: block !important; }
+  .print-only { display: block; }
+  .print-head { font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .no-print, summary::-webkit-details-marker { display: none; }
+  summary { list-style: none; font-size: 20px; padding: 0; margin: 28px 0 12px; }
+  details { break-before: page; margin-top: 0; }
+  .hero, .vote, .row, .review li { break-inside: avoid; }
+  h2 { break-after: avoid; }
+}
 </style>
 </head>
 <body>
@@ -127,6 +150,7 @@ summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
   </section>
 
   <section class="screen" id="results">
+    <div class="print-only print-head"><b>Stance</b> &middot; Quiz results &middot; <span id="printDate"></span></div>
     <div class="hero">
       <div class="label">You align most with</div>
       <div class="name" id="topName"></div>
@@ -134,6 +158,15 @@ summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
       <p class="muted" id="topBlurb"></p>
       <p class="examples"><span class="muted">Politicians like this:</span> <b id="topExamples"></b></p>
       <div class="pct" id="topPct"></div>
+    </div>
+
+    <div class="vote">
+      <div class="label">Make your voice count</div>
+      <ol>
+        <li>Always exercise your right to vote, whatever your political beliefs are today.</li>
+        <li>Vote at every level: local and city, state, and national.</li>
+        <li>Keep these results in mind when you vote.</li>
+      </ol>
     </div>
 
     <h2>Parties</h2>
@@ -151,8 +184,9 @@ summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
     </details>
 
     <p class="note">Politician types are broad generalizations of where each wing of a party usually stands. The example politicians are well-known figures associated with each wing, but no one matches their type on every issue. This quiz isn't affiliated with any party or candidate. Party scores show how closely you match that party's closest wing.</p>
-    <div class="stack" style="margin-top:16px">
-      <button class="btn" id="retakeBtn">Retake the quiz</button>
+    <div class="stack no-print" style="margin-top:16px">
+      <button class="btn" id="pdfBtn">Save as PDF</button>
+      <button class="btn ghost" id="retakeBtn">Retake the quiz</button>
     </div>
   </section>
 
@@ -380,7 +414,7 @@ function renderResults() {
 
   $('review').innerHTML = QUESTIONS.map((q, i) => {
     const agree = ARCH.filter((a, ai) => q.p[ai] === answers[i]).map(a => a.name);
-    return `<li>${q.q}<br>
+    return `<li><span class="qnum">${i + 1} &middot; ${TOPICS[q.t]}</span>${q.q}<br>
       <span class="ans ${answers[i] === 1 ? 'y' : 'n'}">${answers[i] === 1 ? 'Yes' : 'No'}</span>
       <span class="muted"> &middot; ${agree.length ? 'Agrees with: ' + agree.join(', ') : 'No type takes this side outright'}</span></li>`;
   }).join('');
@@ -414,6 +448,12 @@ $('resumeBtn').onclick = () => {
   else { idx = next; renderQuestion(); show('quiz'); }
 };
 $('retakeBtn').onclick = $('startBtn').onclick;
+$('pdfBtn').onclick = () => {
+  $('printDate').textContent = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  document.querySelector('#results details').open = true;
+  // The Android app hands printing to the system print screen, which has "Save as PDF".
+  if (window.StanceApp) StanceApp.print(); else window.print();
+};
 $('backBtn').onclick = () => { if (idx > 0) { idx--; renderQuestion(); } };
 document.querySelectorAll('.answers .btn').forEach(b => b.onclick = () => answer(+b.dataset.a));
 refreshIntro();
