@@ -214,10 +214,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .cmp thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .cmp th:first-child{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;font-weight:600;box-shadow:1px 0 0 var(--line)}
 .cmp td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
-.cmp td.ev{white-space:normal;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
+.cmp td.ev{white-space:normal;overflow-wrap:anywhere;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
 .cmp .cur{background:var(--sunk)}
 .cmp thead th.cur{color:var(--ink)}
-@media (max-width:560px){.cmp th,.cmp td{padding:6px 8px}.cmp th:first-child{white-space:normal;min-width:104px;max-width:120px}}
+@media (max-width:560px){.cmp table{font-size:12px}.cmp th,.cmp td{padding:6px 7px}.cmp th:first-child{white-space:normal;min-width:92px;max-width:98px}.cmp td.ev{font-size:11.5px}}
+.cmp-hint{margin-bottom:-2px}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- End ---------- */
@@ -1088,7 +1089,7 @@ function compareTable(list, cur, pendingYear){
     ['Health', (s, i) => score(s, i, 'health')],
     ['Stock market', s => s.crash ? '<span class="neg">Crashed</span>' : 'Normal'],
     ['What happened', s => s.year === pendingYear ? '<span class="muted">Coming up next</span>' : s.events.length ? s.events.map(esc).join('<br>') : '<span class="muted">A quiet year</span>']];
-  return `<div class="cmp"><table>
+  return `<p class="small muted cmp-hint" hidden>Scroll the table sideways to see other years.</p><div class="cmp"><table>
     <thead><tr><th scope="col"><span class="visually-hidden">Measure</span></th>${list.map(s => `<th scope="col" class="${s.year === cur ? 'cur' : ''}">Year ${s.year}${s.year === cur ? ' · now' : ''}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(([label, f]) => `<tr><th scope="row">${label}</th>${list.map((s, i) => `<td class="${s.year === cur ? 'cur ' : ''}${label === 'What happened' ? 'ev' : 'num'}">${f(s, i)}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>`;
@@ -1097,11 +1098,13 @@ function compareTable(list, cur, pendingYear){
 // With scroll snapping on column edges, no year is ever left half-hidden under the labels.
 function fitCmp(){
   document.querySelectorAll('.cmp').forEach(c => {
-    const th = c.querySelectorAll('thead th'), years = th.length - 1, minW = innerWidth < 560 ? 140 : 170;
+    const th = c.querySelectorAll('thead th'), years = th.length - 1, minW = innerWidth < 560 ? 88 : 170;
+    let k = years;
     for (let pass = 0; pass < 2; pass++){
-      const L = th[0].offsetWidth, avail = c.clientWidth - L, k = Math.max(1, Math.min(years, Math.floor(avail / minW)));
+      const L = th[0].offsetWidth, avail = c.clientWidth - L; k = Math.max(1, Math.min(years, Math.floor(avail / minW)));
       c.style.setProperty('--colw', Math.floor(avail / k) + 'px'); c.style.scrollPaddingLeft = L + 'px';
     }
+    const hint = c.previousElementSibling; if (hint && hint.classList.contains('cmp-hint')) hint.hidden = k >= years;
     c.scrollLeft = c.scrollWidth;
   });
 }
