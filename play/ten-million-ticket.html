@@ -159,7 +159,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .commitrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 
 /* ---------- Effect card ---------- */
-.effect{border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+/* flex-shrink:0 keeps a card at full height inside the scrolling effects log instead of being squeezed */
+.effect{border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden;flex-shrink:0}
 .effect .eh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .effect .eh h3{font-size:14px}
 .egrid{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:1px;background:var(--line)}
@@ -200,6 +201,18 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .choice[disabled]{opacity:.45;cursor:not-allowed}
 .evtext{font-size:16px;max-width:62ch}
 .stamp{font-family:var(--f-display);font-size:13px;color:var(--foil-lo);letter-spacing:.04em}
+
+.cmp{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cmp table{border-collapse:collapse;font-size:13px;min-width:100%}
+.cmp th,.cmp td{padding:7px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+.cmp tr:last-child > *{border-bottom:0}
+.cmp thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.cmp th:first-child{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;font-weight:600;box-shadow:1px 0 0 var(--line)}
+.cmp td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.cmp td.ev{white-space:normal;min-width:190px;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
+.cmp .cur{background:var(--sunk)}
+.cmp thead th.cur{color:var(--ink)}
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- End ---------- */
 .verdict{font-family:var(--f-display);font-size:clamp(28px,6vw,52px);line-height:1.05}
@@ -245,7 +258,8 @@ const BIZ = {
 };
 const PUB_LABEL = ['Nobody', 'Closest family', 'Friends & family', 'Everyone'];
 const PUB_H = [0, 6, 9, 12], PUB_R = [0, 6, 3, -6], PUB_S = [0, -4, -16, -32];
-const NAMES = ['your cousin Jordan', 'your brother-in-law Sam', 'your old roommate Casey', 'your aunt Robin', 'your coworker Alex', 'your college friend Morgan'];
+// [who, is family] — the money-request event words its outcomes to match.
+const NAMES = [['your cousin Jordan', true], ['your brother-in-law Sam', true], ['your aunt Robin', true], ['your old roommate Casey', false], ['your coworker Alex', false], ['your college friend Morgan', false]];
 
 /* ============ Helpers ============ */
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -279,7 +293,7 @@ function newState(){
     lux:{yacht:0, art:0, jewelry:0},
     m:{happy:52, rel:60, safety:78, health:58},
     annLeft:0, charityYear:0, rebound:false, spent:{}, feed:[], history:[], over:null, decisions:0,
-    partner:true, tension:0, seen:{}, childSupport:0, parentAllowance:0
+    partner:true, tension:0, seen:{}, childSupport:0, parentAllowance:0, reports:[]
   };
 }
 function newUI(){ return {active:'budget', vals:{}, modal:null, sel:{payout:'lump', trust:true, partner:true}, revealed:false}; }
@@ -730,6 +744,10 @@ function endYear(){
   // bankruptcy
   if (S.debt > 0 && netWorth() < -25000) S.over = 'bankrupt';
   S.history.push({year:S.year, nw:netWorth()}); R.endNW = netWorth();
+  // A compact copy of this report, kept so later reports can compare years side by side.
+  R.sum = {year:S.year, startNW:R.startNW, moneyIn:R.income.reduce((a, x) => a + x[1], 0), moneyOut:R.costs.reduce((a, x) => a + x[1], 0),
+    growth:R.invest.reduce((a, x) => a + x[2], 0) + R.assets.reduce((a, x) => a + x[1], 0), crash, events:[]};
+  snapYear(R.sum); S.reports.push(R.sum);
   // events
   const Q = []; if (crash && crashLoss < -5000) Q.push(EV.crash);
   const pool = Object.entries(EV).filter(([id]) => id !== 'crash').sort(() => Math.random() - .5);
@@ -740,6 +758,8 @@ function endYear(){
   UI.modal = {kind:'report', R, step:-1, outcome:null};
   render();
 }
+const lastReport = () => S.reports[S.reports.length - 1];
+function snapYear(sum){ Object.assign(sum, {endNW:netWorth(), cash:S.cash, invested:invested(), debt:S.debt, m:{...S.m}}); }
 function nextYear(){
   UI.modal = null; S.pendingNext = false;
   if (S.over || S.year >= MAX_YEAR){ S.screen = 'end'; render(); window.scrollTo(0, 0); return; }
@@ -758,11 +778,11 @@ const EV = {
     {label:'Hold steady', sub:S.svc.advisor === 'fiduciary' ? 'Your advisor recommends this' : 'Do nothing and wait', run:() => eff({health:S.svc.advisor === 'fiduciary' ? 0 : -4, notes:['It’s painful to watch, but you don’t sell.', 'Historically, US markets have recovered from every crash, though some took years.'], apply:S => { S.rebound = true; }})},
     {label:'Buy more while prices are low', sub:'Put 10% of your cash into index funds', need:1000, run:() => { const a = S.cash * .1; return eff({cash:-a, health:-5, notes:[`You buy ${money(a)} of index funds at a discount.`, 'If markets recover, this is the best purchase you make all decade.'], apply:S => { S.inv.index += a; S.rebound = true; }}); }}]}; }},
   relative:{p:() => effPub() >= 1 ? Math.min(.85, .3 + .15 * S.generous + .1 * S.publicity) : 0, build(){
-    const who = pick(NAMES), amt = pick([60000, 120000, 250000]), what = pick(['open a sports bar', 'pay off a second mortgage', 'start a landscaping company', 'cover a bad investment']);
-    return {title:'A request for money', text:`${cap(who)} calls. They want ${money(amt)} to ${what}, and promise to pay you back.`, choices:[
-      {label:`Give ${money(amt)} as a gift`, need:amt, run:() => eff({cash:-amt, rel:6, happy:2, notes:['They’re thrilled and tell everyone how generous you are.', 'Expect more requests. Generosity travels fast.'], apply:S => { S.generous++; addSpend('Giving', amt); }})},
-      {label:'Lend it with a written contract', need:amt, run:() => eff({cash:-amt, rel:2, notes:['A signed note helps, but people rarely sue family.', 'You’ll find out next year whether you get paid back.'], apply:S => { S.loans.push({who, amt}); }})},
-      {label:'Say no, kindly', run:() => eff({rel:-7, happy:-2, health:1, notes:['They’re hurt, and some relatives take their side.', 'The money stays put, and the next no gets easier.']})}]}; }},
+    const [who, fam] = pick(NAMES), amt = pick([60000, 120000, 250000]), what = pick(['open a sports bar', 'pay off a second mortgage', 'start a landscaping company', 'cover a bad investment']);
+    return {title:fam ? 'A request from family' : 'A request from a friend', text:`${cap(who)} calls. They want ${money(amt)} to ${what}, and promise to pay you back.`, choices:[
+      {label:`Give ${money(amt)} as a gift`, need:amt, run:() => eff({cash:-amt, rel:6, happy:2, notes:[`They’re thrilled and tell ${fam ? 'the whole family' : 'all your mutual friends'} how generous you are.`, 'Expect more requests. Generosity travels fast.'], apply:S => { S.generous++; addSpend('Giving', amt); }})},
+      {label:'Lend it with a written contract', need:amt, run:() => eff({cash:-amt, rel:2, notes:[fam ? 'A signed note helps, but people rarely sue family.' : 'A signed note helps, but suing a friend ends the friendship either way.', 'You’ll find out next year whether you get paid back.'], apply:S => { S.loans.push({who, amt}); }})},
+      {label:'Say no, kindly', run:() => eff({rel:-7, happy:-2, health:1, notes:[fam ? 'They’re hurt, and some relatives take their side.' : 'They’re hurt, and a few mutual friends take their side.', 'The money stays put, and the next no gets easier.']})}]}; }},
   scam:{p:() => effPub() >= 2 ? .45 : effPub() >= 1 ? .15 : 0, build(){ const amt = Math.min(500000, nice(Math.max(50000, S.cash * .3)));
     return {title:'An exclusive opportunity', text:`A polished “private wealth group” offers a guaranteed 18% a year. Minimum buy-in: ${money(amt)}. Their office has marble floors and a waterfall in the lobby.`, choices:[
       {label:`Invest ${money(amt)}`, need:amt, run:() => eff({cash:-amt, happy:-8, health:-6, notes:['Eight months later the founders vanish. It was a Ponzi scheme.', `Your ${money(amt)} is gone. Guaranteed high returns are the classic sign of fraud.`], apply:S => addSpend('Scams & lawsuits', amt)})},
@@ -871,6 +891,7 @@ function render(){
   else if (S.screen === 'claim') $app.innerHTML = viewClaim();
   else if (S.screen === 'end') $app.innerHTML = viewEnd() + viewModal();
   else $app.innerHTML = viewPlay() + viewModal();
+  document.querySelectorAll('.cmp').forEach(c => { c.scrollLeft = c.scrollWidth; });   // open on the newest year
   save();
 }
 function viewTicket(){
@@ -1024,6 +1045,7 @@ function viewModal(){
         ${R.biz ? `<p><b>Business:</b> ${esc(R.biz)}</p>` : ''}
         ${R.notes.map(n => n.t === 'bad' ? `<p class="neg"><b>${esc(n.s)}</b></p>` : `<p class="small muted">${esc(n.s)}</p>`).join('')}
         <div><h3 style="margin-bottom:8px">Your life</h3><div class="lifetable">${R.life.map(([l, a, b, why]) => { const d = Math.round(b) - Math.round(a); return `<b>${l}</b><span class="num ${d > 0 ? 'pos' : d < 0 ? 'neg' : 'muted'}">${Math.round(a)} → ${Math.round(b)}</span><span class="muted">${esc(why)}</span>`; }).join('')}</div></div>
+        ${S.reports.length > 1 ? `<div style="display:flex;flex-direction:column;gap:8px"><h3>Compare with past years</h3>${compareTable(S.reports, R.year, R.events.length ? R.year : null)}</div>` : ''}
         ${S.over === 'bankrupt' ? `<p class="neg"><b>Your debts now exceed everything you own. You file for bankruptcy.</b></p>` : ''}
       </div>
       <div class="mf"><button class="btn primary" data-act="nextstep">${R.events.length ? 'See what happened this year (' + R.events.length + ')' : S.over || S.year >= MAX_YEAR ? 'See how it all turned out' : 'Start year ' + (S.year + 1)}</button></div></div></div>`;
@@ -1038,6 +1060,31 @@ function viewModal(){
     <div class="mh"><p class="stamp">YEAR ${R.year} · EVENT ${M.step + 1} OF ${R.events.length}</p><h2 id="mt">${esc(ev.title)}</h2></div>
     <div class="mb"><p class="evtext">${esc(ev.text)}${ev.dynamicLoss ? ` Your stocks and crypto lost ${money(-R.crashLoss)}.` : ''}</p>${body}</div>
     ${M.outcome ? `<div class="mf"><button class="btn primary" data-act="nextstep">${nextLabel}</button></div>` : ''}</div></div>`;
+}
+// Years side by side, oldest on the left. pendingYear is the year whose events haven't been played yet.
+function compareTable(list, cur, pendingYear){
+  const score = (s, i, k) => { const v = Math.round(s.m[k]), d = i ? v - Math.round(list[i - 1].m[k]) : 0;
+    return v + (d ? ` <span class="${d > 0 ? 'pos' : 'neg'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>` : ''); };
+  const signed = n => `<span class="${n < 0 ? 'neg' : n > 0 ? 'pos' : ''}">${money(n, {sign:true})}</span>`;
+  const rows = [
+    ['Net worth at year end', s => money(s.endNW)],
+    ['Change during the year', s => signed(s.endNW - s.startNW)],
+    ['Money in', s => money(s.moneyIn)],
+    ['Money out', s => money(s.moneyOut)],
+    ['Investments & property', s => signed(s.growth)],
+    ['Cash', s => money(s.cash)],
+    ['Invested', s => money(s.invested)],
+    ['Debt', s => money(s.debt)],
+    ['Happiness', (s, i) => score(s, i, 'happy')],
+    ['Relationships', (s, i) => score(s, i, 'rel')],
+    ['Safety', (s, i) => score(s, i, 'safety')],
+    ['Health', (s, i) => score(s, i, 'health')],
+    ['Stock market', s => s.crash ? '<span class="neg">Crashed</span>' : 'Normal'],
+    ['What happened', s => s.year === pendingYear ? '<span class="muted">Coming up next</span>' : s.events.length ? s.events.map(esc).join('<br>') : '<span class="muted">A quiet year</span>']];
+  return `<div class="cmp"><table>
+    <thead><tr><th scope="col"><span class="visually-hidden">Measure</span></th>${list.map(s => `<th scope="col" class="${s.year === cur ? 'cur' : ''}">Year ${s.year}${s.year === cur ? ' · now' : ''}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(([label, f]) => `<tr><th scope="row">${label}</th>${list.map((s, i) => `<td class="${s.year === cur ? 'cur ' : ''}${label === 'What happened' ? 'ev' : 'num'}">${f(s, i)}</td>`).join('')}</tr>`).join('')}</tbody>
+  </table></div>`;
 }
 function viewEnd(){
   const nw = netWorth(), pv = annPV(), total = nw + pv, m = S.m, life = (m.happy + m.rel + m.safety + m.health) / 4;
@@ -1063,6 +1110,7 @@ function viewEnd(){
       <div class="card"><h3>Net worth over ten years</h3><div class="chart">${chart(S.history, 420, 170)}</div></div>
       <div class="card"><h3>Where the money went</h3><div class="spend">${cats.map(([c, a]) => `<div class="r"><span>${c}</span><div class="b" style="width:${Math.max(2, 100 * a / mx)}%"></div><span class="num" style="text-align:right">${money(a)}</span></div>`).join('') || '<p class="muted">You barely spent a thing.</p>'}</div></div>
     </div>
+    ${S.reports.length ? `<div class="card"><h3>Year by year</h3>${compareTable(S.reports, null, null)}</div>` : ''}
     <div class="commitrow"><button class="btn foil" data-act="reallynew">Play again</button><span class="muted small">Try the ${S.payout === 'lump' ? 'monthly payments' : 'lump sum'} this time, or make the opposite choices.</span></div>
   </div>`;
 }
@@ -1093,7 +1141,7 @@ $app.addEventListener('click', e => {
   if (t.dataset.quick){ const def = D[UI.active], v = getVals(def), c = def.controls(v).find(c => c.key === t.dataset.quick); v[c.key] = +t.dataset.f === 1 ? c.max : clamp(nice(c.max * +t.dataset.f), c.min, c.max); document.getElementById('panel').innerHTML = viewPanel(def); return; }
   if (t.dataset.choice != null){
     const M = UI.modal, ev = M.R.events[M.step], c = ev.choices[+t.dataset.choice];
-    const E = c.run(); applyEffect(E, ev.title + ': ' + c.label, 'Event'); M.outcome = strip(E); render(); return;
+    const E = c.run(); applyEffect(E, ev.title + ': ' + c.label, 'Event'); lastReport().events.push(ev.title + ': ' + c.label); M.outcome = strip(E); render(); return;
   }
   const a = t.dataset.act; if (!a) return;
   if (a === 'reveal'){ UI.revealed = true; render(); }
@@ -1111,9 +1159,9 @@ $app.addEventListener('click', e => {
     if (M.step + 1 < R.events.length){
       M.step++; M.outcome = null; const ev = R.events[M.step];
       if (ev.pre) ev.pre(S);
-      if (ev.auto){ const E = ev.auto(); applyEffect(E, ev.title, 'Event'); M.outcome = strip(E); }
+      if (ev.auto){ const E = ev.auto(); applyEffect(E, ev.title, 'Event'); lastReport().events.push(ev.title); M.outcome = strip(E); }
       render();
-    } else { S.history[S.history.length - 1].nw = netWorth(); if (S.debt > 0 && netWorth() < -25000) S.over = 'bankrupt'; nextYear(); }
+    } else { S.history[S.history.length - 1].nw = netWorth(); snapYear(lastReport()); if (S.debt > 0 && netWorth() < -25000) S.over = 'bankrupt'; nextYear(); }
   }
   else if (a === 'newgame'){ UI.modal = {kind:'confirmNew'}; render(); }
   else if (a === 'closemodal'){ UI.modal = null; render(); }
