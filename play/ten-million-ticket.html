@@ -1126,7 +1126,11 @@ function fitCmp(){
       labels.forEach(x => { x.style.width = x.style.minWidth = x.style.maxWidth = ''; });   // measure the labels at their natural width
       const L = th[0].offsetWidth, avail = c.clientWidth - L; k = Math.max(1, Math.min(years, Math.floor(avail / minW)));
       // Whole-pixel year columns; the label column takes the leftover pixels so no sliver of a hidden year shows.
-      const W = Math.floor(avail / k), Lfit = c.clientWidth - k * W;
+      // Prefer a width that is a whole number of screen pixels at this display scaling (e.g. a multiple of 4 at 125%),
+      // so scroll snapping lands exactly on column edges instead of a fraction of a pixel off.
+      let W = Math.floor(avail / k); const dpr = devicePixelRatio || 1;
+      for (let w = W; w > W - 12 && w > 40; w--) if (Math.abs(w * dpr - Math.round(w * dpr)) < 0.01){ W = w; break; }
+      const Lfit = c.clientWidth - k * W;
       c.style.setProperty('--colw', W + 'px'); c.style.scrollPaddingLeft = Lfit + 'px';
       labels.forEach(x => { x.style.width = x.style.minWidth = x.style.maxWidth = Lfit + 'px'; });
     }
