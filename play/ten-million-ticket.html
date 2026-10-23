@@ -189,6 +189,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .modal{background:var(--surface);color:var(--ink);border-radius:16px;width:min(760px,100%);max-height:100%;overflow:auto;box-shadow:var(--shadow);display:flex;flex-direction:column}
 .scrim.top{z-index:70}
 .modal.confirm{width:min(560px,100%)}
+.modal.confirm .egrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal.confirm .egrid > div:first-child{grid-column:1/-1}
 .modal .mh{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .modal .mb{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
 .modal .mf{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--line)}
@@ -752,9 +754,11 @@ function endYear(){
     growth:R.invest.reduce((a, x) => a + x[2], 0) + R.assets.reduce((a, x) => a + x[1], 0), crash, events:[]};
   snapYear(R.sum); S.reports.push(R.sum);
   // events
-  const Q = []; if (crash && crashLoss < -5000) Q.push(EV.crash);
+  // Each event happens at most once per game (S.seen). Loans coming due is the exception: it settles loans you made.
+  // Later market crashes still hit your portfolio and show in the report; only the sell-or-hold card is one-time.
+  const Q = []; if (crash && crashLoss < -5000 && !S.seen.crash){ Q.push(EV.crash); S.seen.crash = true; }
   const pool = Object.entries(EV).filter(([id]) => id !== 'crash').sort(() => Math.random() - .5);
-  for (const [id, e] of pool){ if (Q.length >= 3) break; if (e.once && S.seen[id]) continue; const p = e.p(); if (p > 0 && Math.random() < p){ Q.push(e); if (e.once) S.seen[id] = true; } }
+  for (const [id, e] of pool){ if (Q.length >= 3) break; if (id === 'loanback' || S.seen[id]) continue; const p = e.p(); if (p > 0 && Math.random() < p){ Q.push(e); S.seen[id] = true; } }
   if (S.loans.length && !Q.includes(EV.loanback)) Q.push(EV.loanback);
   R.events = Q.map(e => e.build());
   S.charityYear = 0; S.pendingNext = true;
@@ -849,8 +853,8 @@ const EV = {
       {label:'Make a joint plan with a fiduciary advisor', sub:S.svc.advisor === 'fiduciary' ? 'Your advisor runs the meeting' : 'Hire a fee-only fiduciary (0.75% a year)', run:() => eff({rel:5, health:3, notes:[
         'You agree on a written plan: a shared budget, separate “fun money” for each of you, and big decisions made together.', 'Couples who set money rules early fight about it far less.'].concat(S.svc.advisor === 'fiduciary' ? [] : ['You hire a fee-only fiduciary advisor.']),
         apply:S => { S.svc.advisor = 'fiduciary'; S.tension = Math.max(0, S.tension - 1); }})},
-      {label:'Refuse. It was your ticket.', run:() => eff({rel:-10, happy:-4, health:-3, notes:['The argument goes on for weeks. They feel shut out of their own future.', 'If this keeps happening, the relationship may not survive it.'], apply:S => { S.tension++; }})}]}; }},
-  divorce:{once:true, p:() => S.partner && S.tension >= 2 ? .6 : 0, build(){
+      {label:'Refuse. It was your ticket.', run:() => eff({rel:-10, happy:-4, health:-3, notes:['The argument goes on for weeks. They feel shut out of their own future.', 'Resentment like this can end a relationship.'], apply:S => { S.tension++; }})}]}; }},
+  divorce:{p:() => S.partner && S.tension >= 1 ? .5 : 0, build(){
     return {title:'Your partner files for divorce', text:'The fights about money never stopped. Your partner moves out and hires a divorce attorney.', auto:() => {
       const share = .4, fees = 60000, invTake = (invested() - S.inv.angel) * share, cashTake = Math.max(0, S.cash) * share;
       return eff({cash:-cashTake - fees, rel:-15, happy:-15, health:-8, notes:[`Lawyers cost ${money(fees)}. The settlement gives your ex about ${money(cashTake + invTake)} of your cash and investments.`,
@@ -863,7 +867,7 @@ const EV = {
           : [`Six months and ${money(gifts)} in gifts, trips, and a “loan” for their rent later, they disappear.`, 'It was about the money.'], apply:S => { if (real){ S.partner = true; S.tension = 0; } else addSpend('Luxury', gifts); }}); }},
       {label:'Only date people who knew you before the win', run:() => eff({happy:-1, safety:2, health:1, notes:['Your dating pool shrinks, but you trust it more.']})},
       {label:'Stay single for now', run:() => eff({happy:-3, rel:-2, notes:['It’s safer. It’s also lonely.']})}]}; }},
-  ex:{once:true, p:() => effPub() >= 2 ? .22 : effPub() >= 1 ? .08 : 0, build(){
+  ex:{p:() => effPub() >= 2 ? .22 : effPub() >= 1 ? .08 : 0, build(){
     return {title:'An ex from ten years ago', text:'An ex-girlfriend you haven’t spoken to in a decade contacts your lawyer. She says her nine-year-old child is yours, that you once promised to help her if she ever needed it, and that you assaulted her during the relationship. She wants $2 million.', choices:[
       {label:'Pay $400,000 to settle quietly', need:400000, run:() => eff({cash:-400000, happy:-5, health:-3, notes:['Both sides sign a settlement and the claims go no further.', 'Lawyers warn that a quick payout can look like an admission, and can invite others to try the same thing.'], apply:S => addSpend('Scams & lawsuits', 400000)})},
       {label:'Answer through lawyers and request a paternity test', sub:S.svc.cpa ? 'Your estate attorney brings in a litigator' : 'Hire a litigator', run:() => {
@@ -876,7 +880,7 @@ const EV = {
         return eff({cash:goesPublic ? -500000 : 0, safety:goesPublic ? -8 : 0, rel:goesPublic ? -10 : -1, happy:-6, health:-6, notes:goesPublic
           ? ['She takes the story to a tabloid, then wins a $500,000 default judgment because you never responded.', 'Everyone you know reads the headline.']
           : ['After months of silence from you, her lawyer drops the case.', 'You still open your mail with dread.'], apply:S => { if (goesPublic){ S.publicity = 3; addSpend('Scams & lawsuits', 500000); } }}); }}]}; }},
-  parentsbill:{once:true, p:() => S.publicity >= 1 ? .14 : 0, build(){ const bill = S.parentsHome ? 160000 : 310000;
+  parentsbill:{p:() => S.publicity >= 1 ? .14 : 0, build(){ const bill = S.parentsHome ? 160000 : 310000;
     return {title:'An invoice from your parents', text:`Your parents mail you an itemized bill for raising you: diapers, braces, soccer camp, car insurance at 16, and four years of college. Total: ${money(bill)}.${S.parentsHome ? ' They already subtracted the house you bought them.' : ''} There’s a smiley face at the bottom. They seem to mean it.`, choices:[
       {label:'Pay it in full', need:bill, run:() => eff({cash:-bill, rel:4, happy:-2, notes:['They frame the receipt.', 'Your siblings start drafting invoices of their own, addressed to you.'], apply:S => { addSpend('Giving', bill); S.generous++; }})},
       {label:'Offer a monthly allowance instead', sub:'$2,500 a month for as long as they need it', run:() => eff({flow:-30000, rel:7, happy:2, notes:['They feel cared for, and you control the pace.', 'It adds $30,000 a year to your costs, probably for decades.'], apply:S => { S.parentAllowance = 30000; }})},
