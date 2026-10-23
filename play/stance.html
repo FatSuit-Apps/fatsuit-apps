@@ -75,6 +75,7 @@ p { margin: 0 0 12px; }
 .hero .party { font-weight: 600; margin: 6px 0 12px; }
 .hero .pct { font-size: 15px; }
 .hero .examples { font-size: 15px; }
+.hero .mixed { font-size: 15px; margin: 0 0 10px; }
 .vote { background: #eceefa; border-left: 4px solid var(--accent); border-radius: 12px; padding: 16px 18px; margin-top: 16px; }
 .vote .label { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
 .vote ol { margin: 0; padding-left: 20px; font-size: 15px; }
@@ -151,7 +152,8 @@ summary { font-weight: 600; cursor: pointer; padding: 8px 0; }
   <section class="screen" id="results">
     <div class="print-only print-head"><b>Stance</b> &middot; Quiz results &middot; <span id="printDate"></span></div>
     <div class="hero">
-      <div class="label">You align most with</div>
+      <div class="label" id="topLabel">You align most with</div>
+      <p class="mixed" id="topMixed" hidden></p>
       <div class="name" id="topName"></div>
       <div class="party" id="topParty"></div>
       <p class="muted" id="topBlurb"></p>
@@ -244,9 +246,9 @@ const QUESTIONS = [
   { t: 2, q: 'Should able-bodied adults on food stamps or Medicaid be required to work or look for work?',
     c: 'Some programs already have work requirements, and there are proposals to expand them.',
     p: [-1, -1, 0, -1, 1, 1, 1, 1] },
-  { t: 2, q: 'Should it be made easier for workers to form unions?',
-    c: 'Proposals like the PRO Act would override state "right-to-work" laws and add penalties for employers who interfere with organizing.',
-    p: [1, 1, 1, 1, -1, -1, 0, -1] },
+  { t: 2, q: 'Should states be allowed to pass "right-to-work" laws, so no worker can be required to pay union fees?',
+    c: 'About half of states have these laws. Supporters say they protect individual choice; unions say they weaken workers’ bargaining power.',
+    p: [-1, -1, -1, -1, 1, 1, 0, 1] },
 
   { t: 3, q: 'Should undocumented immigrants who have lived in the US for many years have a path to citizenship?',
     c: 'An estimated 11 to 14 million undocumented immigrants live in the US, many of them for over a decade.',
@@ -268,15 +270,15 @@ const QUESTIONS = [
     c: 'A 2022 law allowed Medicare to negotiate prices for a limited number of drugs.',
     p: [1, 1, 1, 1, 0, -1, 1, -1] },
 
-  { t: 5, q: 'Should the US aim to produce all of its electricity without carbon emissions by 2035?',
-    c: 'Electricity generation produces about a quarter of US greenhouse gas emissions.',
-    p: [1, 1, -1, 1, -1, -1, -1, -1] },
+  { t: 5, q: 'Should the US ban fracking for oil and natural gas?',
+    c: 'Fracking produces most of the oil and natural gas the US pumps today.',
+    p: [1, -1, -1, 1, -1, -1, -1, -1] },
   { t: 5, q: 'Should the government expand oil and gas drilling on federal lands and offshore?',
     c: 'Federal lands and waters produce about a quarter of US oil.',
     p: [-1, -1, 1, -1, 1, 1, 1, 1] },
-  { t: 5, q: 'Should the US rejoin and stay in international climate agreements like the Paris Agreement?',
+  { t: 5, q: 'Should the US stay out of the Paris climate agreement?',
     c: 'The US has withdrawn from the Paris Agreement twice. The most recent withdrawal took effect in January 2026.',
-    p: [1, 1, 1, 1, 0, -1, -1, -1] },
+    p: [-1, -1, -1, -1, 0, 1, 1, 1] },
 
   { t: 6, q: 'Should abortion be legal in all or most cases?',
     c: 'Since Roe v. Wade was overturned in 2022, each state has set its own abortion laws.',
@@ -294,9 +296,9 @@ const QUESTIONS = [
   { t: 7, q: 'Should federal law ban discrimination based on sexual orientation and gender identity in housing, public places and services?',
     c: 'Federal law already protects LGBTQ workers from job discrimination. The proposed Equality Act would extend that protection to other areas.',
     p: [1, 1, 1, 1, 0, -1, -1, 0] },
-  { t: 7, q: 'Should transgender girls be barred from competing on girls’ school sports teams?',
-    c: 'More than 25 states have passed laws like this.',
-    p: [-1, -1, 0, -1, 1, 1, 1, 0] },
+  { t: 7, q: 'Should transgender girls be allowed to compete on girls’ school sports teams?',
+    c: 'More than 25 states have passed laws barring them.',
+    p: [1, 1, 0, 1, -1, -1, -1, 0] },
 
   { t: 8, q: 'Should background checks be required for all gun sales, including private sales?',
     c: 'Licensed dealers must run background checks. In many states, private sellers don’t have to.',
@@ -309,7 +311,7 @@ const QUESTIONS = [
     p: [1, 1, 0, 1, -1, -1, -1, -1] },
 ];
 
-const KEY = 'stance.answers.v1';
+const KEY = 'stance.answers.v2';
 let answers = load();
 let idx = 0;
 
@@ -371,6 +373,18 @@ function renderResults() {
   const arch = ARCH.map((a, i) => ({ ...a, score: agreement(i, all) }))
     .sort((a, b) => b.score - a.score);
   const best = arch[0];
+  const parties = Object.keys(PARTIES).map(k => {
+    const wing = arch.find(a => a.party === k);
+    return { k, score: wing.score, wing: wing.name };
+  }).sort((a, b) => b.score - a.score);
+
+  // A weak match with the top two parties within a couple of answers: don't crown a winner.
+  const mixed = best.score < 0.65 && parties[0].score - parties[1].score < 0.05;
+  $('topLabel').textContent = mixed ? 'Your views are mixed' : 'You align most with';
+  $('topMixed').hidden = !mixed;
+  $('topMixed').textContent = mixed
+    ? `You don't line up clearly with one party: ${PARTIES[parties[0].k].name} and ${PARTIES[parties[1].k].name} are nearly tied. The closest politician type is:`
+    : '';
 
   $('topName').textContent = best.name;
   $('topParty').innerHTML = dot(best.party) + PARTIES[best.party].name;
@@ -378,11 +392,6 @@ function renderResults() {
   $('topBlurb').textContent = best.blurb;
   $('topExamples').textContent = best.examples;
   $('topPct').innerHTML = `<b>${pct(best.score)}</b> agreement across ${QUESTIONS.length} questions`;
-
-  const parties = Object.keys(PARTIES).map(k => {
-    const wing = arch.find(a => a.party === k);
-    return { k, score: wing.score, wing: wing.name };
-  }).sort((a, b) => b.score - a.score);
   $('partyRows').innerHTML = parties.map(p => `
     <div class="row">
       <div class="top"><b>${dot(p.k)}${PARTIES[p.k].name}</b><span>${pct(p.score)}</span></div>
