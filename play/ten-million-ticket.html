@@ -187,6 +187,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .scrim{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);display:grid;place-items:center;z-index:50;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .modal{background:var(--surface);color:var(--ink);border-radius:16px;width:min(760px,100%);max-height:100%;overflow:auto;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.scrim.top{z-index:70}
+.modal.confirm{width:min(560px,100%)}
 .modal .mh{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .modal .mb{padding:18px 22px;display:flex;flex-direction:column;gap:18px}
 .modal .mf{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--line)}
@@ -297,7 +299,7 @@ function newState(){
     partner:true, tension:0, seen:{}, childSupport:0, parentAllowance:0, reports:[]
   };
 }
-function newUI(){ return {active:'budget', vals:{}, modal:null, sel:{payout:'lump', trust:true, partner:true}, revealed:false}; }
+function newUI(){ return {active:'budget', vals:{}, modal:null, confirm:null, sel:{payout:'lump', trust:true, partner:true}, revealed:false}; }
 
 /* ============ Derived values ============ */
 const invested = () => Object.values(S.inv).reduce((a, b) => a + b, 0);
@@ -888,10 +890,9 @@ const EV = {
 /* ============ Rendering ============ */
 const $app = document.getElementById('app');
 function render(){
-  if (S.screen === 'ticket') $app.innerHTML = viewTicket();
-  else if (S.screen === 'claim') $app.innerHTML = viewClaim();
-  else if (S.screen === 'end') $app.innerHTML = viewEnd() + viewModal();
-  else $app.innerHTML = viewPlay() + viewModal();
+  const page = S.screen === 'ticket' ? viewTicket() : S.screen === 'claim' ? viewClaim() : S.screen === 'end' ? viewEnd() + viewModal() : viewPlay() + viewModal();
+  $app.innerHTML = page + viewConfirm();
+  const yes = document.querySelector('[data-act="yes"]'); if (yes) yes.focus();
   // Open each comparison on the newest year, lined up just right of the pinned row labels.
   document.querySelectorAll('.cmp').forEach(c => { const th = c.querySelectorAll('thead th'); c.scrollLeft = th[th.length - 1].offsetLeft - th[0].offsetWidth; });
   save();
@@ -1118,6 +1119,47 @@ function viewEnd(){
 }
 
 /* ============ Interaction ============ */
+/* ============ Confirmation ============ */
+// Every decision waits for a Yes here. Event outcomes stay hidden until after the Yes, since many are random.
+function picked(def){
+  const v = getVals(def);
+  return def.controls(v).filter(c => !(c.hide && c.hide(v))).map(c => {
+    if (c.type === 'choice'){ const o = c.options.find(o => String(o.v) === String(v[c.key])); return o ? o.label : ''; }
+    if (c.type === 'range') return c.max > c.min ? money(v[c.key], {full:true}) : '';
+    return v[c.key] ? c.label : '';
+  }).filter(Boolean).join(' · ');
+}
+function viewConfirm(){
+  const C = UI.confirm; if (!C) return '';
+  let title, body;
+  if (C.kind === 'commit'){
+    const def = D[UI.active], what = picked(def);
+    title = def.title + '?';
+    body = (what ? `<p class="evtext"><b>${esc(what)}</b></p>` : '') + effectCard(def.effect(getVals(def), S), 'What will happen', false, '');
+  } else if (C.kind === 'claim'){
+    title = `Claim ${UI.sel.payout === 'lump' ? 'the lump sum' : 'monthly payments'}${UI.sel.trust ? ' through a trust' : ''}?`;
+    body = `<p class="evtext">You can’t change how you’re paid after you claim.</p>` + effectCard(claimEffect(UI.sel.payout, UI.sel.trust), 'What will happen', false, '');
+  } else {
+    const ev = UI.modal.R.events[UI.modal.step], c = ev.choices[C.i];
+    title = ev.title + ': ' + c.label + '?';
+    body = `<p class="evtext">${c.sub ? esc(c.sub) + '. ' : ''}You’ll see how it turns out after you confirm.</p>`;
+  }
+  return `<div class="scrim top"><div class="modal confirm" role="alertdialog" aria-modal="true" aria-labelledby="ct">
+    <div class="mh"><p class="stamp">ARE YOU SURE?</p><h2 id="ct">${esc(title)}</h2></div>
+    <div class="mb">${body}</div>
+    <div class="mf"><button class="btn" data-act="no">No</button><button class="btn primary" data-act="yes">Yes</button></div></div></div>`;
+}
+function doCommit(){
+  const def = D[UI.active], E = def.effect(getVals(def), S); if (E.blocked){ render(); return; }
+  applyEffect(E, def.title, def.cat); S.decisions++;
+  UI.vals[UI.active] = {}; render(); toast('Done. See the effects log.');
+}
+function doChoice(i){
+  const M = UI.modal, ev = M.R.events[M.step], c = ev.choices[i];
+  const E = c.run(); applyEffect(E, ev.title + ': ' + c.label, 'Event'); lastReport().events.push(ev.title + ': ' + c.label); M.outcome = strip(E); render();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.confirm){ UI.confirm = null; render(); } });
+
 let toastT;
 function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
 function refreshPreview(){ const def = D[UI.active], v = getVals(def), E = def.effect(v, S); const p = document.getElementById('preview'); if (p) p.innerHTML = effectCard(E, 'If you do this', false, 'Preview'); const b = document.querySelector('[data-act="commit"]'); if (b) b.disabled = !!E.blocked; }
@@ -1137,24 +1179,20 @@ $app.addEventListener('change', e => {
   else refreshPreview();
 });
 $app.addEventListener('click', e => {
+  if (e.target.matches('.scrim.top')){ UI.confirm = null; render(); return; }   // tap outside a confirmation = No
   const t = e.target.closest('button,[data-pay]'); if (!t) return;
   if (t.dataset.pay){ UI.sel.payout = t.dataset.pay; render(); return; }
   if (t.dataset.nav){ UI.active = t.dataset.nav; render(); document.getElementById('panel').scrollIntoView({block:'nearest', behavior:'smooth'}); return; }
   if (t.dataset.quick){ const def = D[UI.active], v = getVals(def), c = def.controls(v).find(c => c.key === t.dataset.quick); v[c.key] = +t.dataset.f === 1 ? c.max : clamp(nice(c.max * +t.dataset.f), c.min, c.max); document.getElementById('panel').innerHTML = viewPanel(def); return; }
-  if (t.dataset.choice != null){
-    const M = UI.modal, ev = M.R.events[M.step], c = ev.choices[+t.dataset.choice];
-    const E = c.run(); applyEffect(E, ev.title + ': ' + c.label, 'Event'); lastReport().events.push(ev.title + ': ' + c.label); M.outcome = strip(E); render(); return;
-  }
+  if (t.dataset.choice != null){ UI.confirm = {kind:'choice', i:+t.dataset.choice}; render(); return; }
   const a = t.dataset.act; if (!a) return;
-  if (a === 'reveal'){ UI.revealed = true; render(); }
+  if (a === 'yes'){ const C = UI.confirm; UI.confirm = null; if (C.kind === 'claim') doClaim(); else if (C.kind === 'commit') doCommit(); else doChoice(C.i); }
+  else if (a === 'no'){ UI.confirm = null; render(); }
+  else if (a === 'reveal'){ UI.revealed = true; render(); }
   else if (a === 'toclaim'){ S.screen = 'claim'; render(); window.scrollTo(0, 0); }
   else if (a === 'back'){ S.screen = 'ticket'; render(); }
-  else if (a === 'claim') doClaim();
-  else if (a === 'commit'){
-    const def = D[UI.active], v = getVals(def), E = def.effect(v, S); if (E.blocked) return;
-    applyEffect(E, def.title, def.cat); S.decisions++;
-    UI.vals[UI.active] = {}; render(); toast('Done. See the effects log.');
-  }
+  else if (a === 'claim'){ UI.confirm = {kind:'claim'}; render(); }
+  else if (a === 'commit'){ const def = D[UI.active]; if (!def.effect(getVals(def), S).blocked){ UI.confirm = {kind:'commit'}; render(); } }
   else if (a === 'endyear') endYear();
   else if (a === 'nextstep'){
     const M = UI.modal; const R = M.R;
@@ -1171,7 +1209,7 @@ $app.addEventListener('click', e => {
 });
 
 /* ============ Persistence ============ */
-function save(){ try { localStorage.setItem('tenm-ticket', JSON.stringify({S, UI:{...UI, modal:null}})); } catch (e) {} }
+function save(){ try { localStorage.setItem('tenm-ticket', JSON.stringify({S, UI:{...UI, modal:null, confirm:null}})); } catch (e) {} }
 function load(){ try { const d = JSON.parse(localStorage.getItem('tenm-ticket') || 'null'); if (d && d.S && d.S.screen) return d; } catch (e) {} return null; }
 function start(data){
   const d = (data && data.S) ? data : load();
@@ -1179,7 +1217,7 @@ function start(data){
   else { S = newState(); UI = newUI(); }
   render();
 }
-window.claude?.hot?.snapshot?.(() => ({S, UI:{...UI, modal:null}}));
+window.claude?.hot?.snapshot?.(() => ({S, UI:{...UI, modal:null, confirm:null}}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 </script>
 
