@@ -684,6 +684,7 @@ const strip = E => ({cash:E.cash, flow:E.flow, growth:E.growth, happy:E.happy, r
 
 /* ============ Year end ============ */
 function endYear(){
+  if (S.pending) return;   // this year's report is still open; never finish a year twice
   const R = {year:S.year, startNW:netWorth(), income:[], costs:[], invest:[], assets:[], life:[], notes:[]};
   const sal = salaryNet(); if (sal){ S.cash += sal; R.income.push(['Salary after tax', sal]); }
   if (S.payout === 'annuity') R.notes.push({t:'info', s:`This year’s 12 annuity payments (${money(ANN_NET_M * 12)}) arrived at the start of the year, so they were already in your cash.`});
@@ -762,15 +763,35 @@ function endYear(){
   const pool = Object.entries(EV).filter(([id]) => id !== 'crash').sort(() => Math.random() - .5);
   for (const [id, e] of pool){ if (Q.length >= 3) break; if (id === 'loanback' || S.seen[id]) continue; const p = e.p(); if (p > 0 && Math.random() < p){ Q.push(e); S.seen[id] = true; } }
   if (S.loans.length && !Q.includes(EV.loanback)) Q.push(EV.loanback);
-  R.events = Q.map(e => e.build());
-  S.charityYear = 0; S.pendingNext = true;
+  // The open report lives in S.pending so closing the app mid-report keeps it, events and all.
+  // Each event gets a seed so rebuilding it after a reload gives the same people and amounts.
+  const ids = Q.map(e => Object.keys(EV).find(k => EV[k] === e)), seeds = ids.map(() => Math.floor(Math.random() * 2 ** 31));
+  S.loansDue = S.loans.length;   // loans made before this report; loans from its events come due next year
+  S.charityYear = 0;
+  // Events are built from this snapshot, now and after any reload, so later events in the report
+  // keep the amounts and names they had when the report opened.
+  const {feed, history, reports, pending, ...snap} = JSON.parse(JSON.stringify(S));
+  R.events = ids.map((id, i) => buildEvent(id, seeds[i], snap));
+  const {events, sum, ...data} = R;
+  S.pending = {R:data, ids, seeds, snap, step:-1, outcome:null};
   UI.modal = {kind:'report', R, step:-1, outcome:null};
   render();
 }
 const lastReport = () => S.reports[S.reports.length - 1];
 function snapYear(sum){ Object.assign(sum, {endNW:netWorth(), cash:S.cash, invested:invested(), debt:S.debt, m:{...S.m}}); }
+// A small seeded random generator (mulberry32), swapped in while an event is built.
+function seeded(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// Builds an event against the report-opening snapshot. Choices still act on the live game when picked.
+function buildEvent(id, seed, snap){
+  const real = Math.random, live = S; Math.random = seeded(seed); S = Object.assign(newState(), JSON.parse(JSON.stringify(snap)));
+  try { return EV[id].build(); } finally { Math.random = real; S = live; }
+}
+function restoreReport(){
+  const P = S.pending, R = {...P.R, events:P.ids.map((id, i) => buildEvent(id, P.seeds[i], P.snap))};
+  UI.modal = {kind:'report', R, step:P.step, outcome:P.outcome};
+}
 function nextYear(){
-  UI.modal = null; S.pendingNext = false;
+  UI.modal = null; S.pending = null; S.pendingNext = false;
   if (S.over || S.year >= MAX_YEAR){ S.screen = 'end'; render(); window.scrollTo(0, 0); return; }
   S.year++; S.age++;
   if (S.payout === 'annuity' && S.annLeft > 0){ S.cash += ANN_NET_M * 12; S.annLeft -= 12; }
@@ -825,10 +846,10 @@ const EV = {
       {label:'Ask about the fees and decline', run:() => eff({health:1, notes:['They change the subject. You start wondering whose side they’re on.']})}]}; }},
   impulse:{p:() => S.budget.mode === 'none' ? .75 : 0, build(){ const c = nice(Math.max(15000, S.cash * (.03 + Math.random() * .05)));
     return {title:'Impulse buys', text:'Without a budget, small yeses add up: a jet ski you used twice, a home theater, a closet of designer clothes.', auto:() => eff({cash:-c, happy:1, notes:[`Total: ${money(c)}, beyond your living expenses.`, 'It barely moved your happiness.'], apply:S => addSpend('Luxury', c)})}; }},
-  loanback:{p:() => 0, build(){ const L = S.loans.slice(); const res = L.map(l => ({...l, paid:Math.random() < .35}));
+  loanback:{p:() => 0, build(){ const L = S.loans.slice(0, S.loansDue ?? S.loans.length); const res = L.map(l => ({...l, paid:Math.random() < .35}));
     const back = res.filter(r => r.paid).reduce((a, r) => a + r.amt, 0), lost = res.filter(r => !r.paid);
     return {title:'Loans come due', text:`You lent money to ${L.map(l => l.who).join(' and ')}.`, auto:() => eff({cash:back, rel:lost.length ? -5 * lost.length : 3, happy:lost.length ? -3 : 2,
-      notes:res.map(r => r.paid ? `${cap(r.who)} paid back the ${money(r.amt)}. A rare happy ending.` : `${cap(r.who)} hasn’t paid back the ${money(r.amt)} and avoids your calls.`), apply:S => { S.loans = S.loans.filter(l => !L.includes(l)); lost.forEach(l => addSpend('Giving', l.amt)); }})}; }},
+      notes:res.map(r => r.paid ? `${cap(r.who)} paid back the ${money(r.amt)}. A rare happy ending.` : `${cap(r.who)} hasn’t paid back the ${money(r.amt)} and avoids your calls.`), apply:S => { S.loans.splice(0, L.length); lost.forEach(l => addSpend('Giving', l.amt)); }})}; }},
   reunion:{p:() => S.publicity >= 2 ? .25 : 0, build(){
     return {title:'An old friend reappears', text:'A high school friend you haven’t heard from in 12 years invites you to dinner. Halfway through, they pitch a “can’t-miss” real estate deal: $250,000.', choices:[
       {label:'Invest $250,000', need:250000, run:() => { const ok = Math.random() < .3; return eff({cash:ok ? 150000 : -250000, rel:ok ? 3 : -4, happy:ok ? 3 : -5, notes:[ok ? 'Surprisingly, it works out. You net $150,000 when the property sells.' : 'The project stalls and the permits never come. The money is gone.'], apply:S => { if (!ok) addSpend('Scams & lawsuits', 250000); }}); }},
@@ -900,6 +921,7 @@ function render(){
   $app.innerHTML = page + viewConfirm();
   const yes = document.querySelector('[data-act="yes"]'); if (yes) yes.focus();
   fitCmp();
+  if (S.pending && UI.modal && UI.modal.kind === 'report'){ S.pending.step = UI.modal.step; S.pending.outcome = UI.modal.outcome; }
   save();
 }
 function viewTicket(){
@@ -1234,7 +1256,9 @@ function save(){ try { localStorage.setItem('tenm-ticket', JSON.stringify({S, UI
 function load(){ try { const d = JSON.parse(localStorage.getItem('tenm-ticket') || 'null'); if (d && d.S && d.S.screen) return d; } catch (e) {} return null; }
 function start(data){
   const d = (data && data.S) ? data : load();
-  if (d && d.S.screen !== 'ticket'){ S = Object.assign(newState(), d.S); UI = Object.assign(newUI(), d.UI || {}, {modal:null}); if (S.pendingNext){ nextYear(); return; } }
+  if (d && d.S.screen !== 'ticket'){ S = Object.assign(newState(), d.S); UI = Object.assign(newUI(), d.UI || {}, {modal:null, confirm:null});
+    if (S.pending) restoreReport();                        // reopen the year-end report where it was left
+    else if (S.pendingNext){ nextYear(); return; } }       // saves from v1.5 and earlier kept no report to restore
   else { S = newState(); UI = newUI(); }
   render();
 }
