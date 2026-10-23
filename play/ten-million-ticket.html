@@ -206,17 +206,18 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .evtext{font-size:16px;max-width:62ch}
 .stamp{font-family:var(--f-display);font-size:13px;color:var(--foil-lo);letter-spacing:.04em}
 
-.cmp{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cmp{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);scroll-snap-type:x mandatory}
+.cmp td,.cmp thead th:not(:first-child){width:var(--colw,auto);min-width:var(--colw,0);max-width:var(--colw,none);scroll-snap-align:start}
 .cmp table{border-collapse:collapse;font-size:13px;min-width:100%}
 .cmp th,.cmp td{padding:7px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
 .cmp tr:last-child > *{border-bottom:0}
 .cmp thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .cmp th:first-child{position:sticky;left:0;z-index:1;background:var(--surface);text-align:left;font-weight:600;box-shadow:1px 0 0 var(--line)}
 .cmp td.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
-.cmp td.ev{white-space:normal;min-width:190px;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
+.cmp td.ev{white-space:normal;text-align:left;font-size:12px;line-height:1.4;color:var(--muted)}
 .cmp .cur{background:var(--sunk)}
 .cmp thead th.cur{color:var(--ink)}
-@media (max-width:560px){.cmp th,.cmp td{padding:6px 8px}.cmp th:first-child{white-space:normal;min-width:104px}.cmp td.ev{min-width:150px}}
+@media (max-width:560px){.cmp th,.cmp td{padding:6px 8px}.cmp th:first-child{white-space:normal;min-width:104px;max-width:120px}}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- End ---------- */
@@ -225,7 +226,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .spend .r{display:grid;grid-template-columns:150px minmax(0,1fr) 90px;gap:10px;align-items:center;font-size:13.5px}
 .spend .r .b{height:10px;border-radius:5px;background:var(--accent)}
 @media (max-width:520px){.spend .r{grid-template-columns:110px minmax(0,1fr) 76px}}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:60;box-shadow:var(--shadow)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:40;box-shadow:var(--shadow)}   /* below pop-ups (50+) */
 .fineprint{font-size:12px;color:var(--muted);max-width:80ch}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -897,8 +898,7 @@ function render(){
   const page = S.screen === 'ticket' ? viewTicket() : S.screen === 'claim' ? viewClaim() : S.screen === 'end' ? viewEnd() + viewModal() : viewPlay() + viewModal();
   $app.innerHTML = page + viewConfirm();
   const yes = document.querySelector('[data-act="yes"]'); if (yes) yes.focus();
-  // Open each comparison on the newest year, lined up just right of the pinned row labels.
-  document.querySelectorAll('.cmp').forEach(c => { const th = c.querySelectorAll('thead th'); c.scrollLeft = th[th.length - 1].offsetLeft - th[0].offsetWidth; });
+  fitCmp();
   save();
 }
 function viewTicket(){
@@ -1093,6 +1093,19 @@ function compareTable(list, cur, pendingYear){
     <tbody>${rows.map(([label, f]) => `<tr><th scope="row">${label}</th>${list.map((s, i) => `<td class="${s.year === cur ? 'cur ' : ''}${label === 'What happened' ? 'ev' : 'num'}">${f(s, i)}</td>`).join('')}</tr>`).join('')}</tbody>
   </table></div>`;
 }
+// Size year columns so a whole number of them fits beside the pinned labels, then open on the newest year.
+// With scroll snapping on column edges, no year is ever left half-hidden under the labels.
+function fitCmp(){
+  document.querySelectorAll('.cmp').forEach(c => {
+    const th = c.querySelectorAll('thead th'), years = th.length - 1, minW = innerWidth < 560 ? 140 : 170;
+    for (let pass = 0; pass < 2; pass++){
+      const L = th[0].offsetWidth, avail = c.clientWidth - L, k = Math.max(1, Math.min(years, Math.floor(avail / minW)));
+      c.style.setProperty('--colw', Math.floor(avail / k) + 'px'); c.style.scrollPaddingLeft = L + 'px';
+    }
+    c.scrollLeft = c.scrollWidth;
+  });
+}
+addEventListener('resize', fitCmp);
 function viewEnd(){
   const nw = netWorth(), pv = annPV(), total = nw + pv, m = S.m, life = (m.happy + m.rel + m.safety + m.health) / 4;
   const v = S.over === 'bankrupt' ? ['Broke.', 'Your debts outgrew everything you owned. You filed for bankruptcy.']
@@ -1145,8 +1158,8 @@ function viewConfirm(){
     body = `<p class="evtext">You can’t change how you’re paid after you claim.</p>` + effectCard(claimEffect(UI.sel.payout, UI.sel.trust), 'What will happen', false, '');
   } else {
     const ev = UI.modal.R.events[UI.modal.step], c = ev.choices[C.i];
-    title = ev.title + ': ' + c.label + '?';
-    body = `<p class="evtext">${c.sub ? esc(c.sub) + '. ' : ''}You’ll see how it turns out after you confirm.</p>`;
+    title = c.label;
+    body = `<p class="small muted">${esc(ev.title)}</p><p class="evtext">${c.sub ? esc(c.sub) + '. ' : ''}You’ll see how it turns out after you confirm.</p>`;
   }
   return `<div class="scrim top"><div class="modal confirm" role="alertdialog" aria-modal="true" aria-labelledby="ct">
     <div class="mh"><p class="stamp">ARE YOU SURE?</p><h2 id="ct">${esc(title)}</h2></div>
@@ -1160,7 +1173,8 @@ function doCommit(){
 }
 function doChoice(i){
   const M = UI.modal, ev = M.R.events[M.step], c = ev.choices[i];
-  const E = c.run(); applyEffect(E, ev.title + ': ' + c.label, 'Event'); lastReport().events.push(ev.title + ': ' + c.label); M.outcome = strip(E); render();
+  const label = ev.title.replace(/[?.!]$/, '') + ': ' + c.label;   // "Who controls the money: Refuse…", not "…money?: Refuse…"
+  const E = c.run(); applyEffect(E, label, 'Event'); lastReport().events.push(label); M.outcome = strip(E); render();
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.confirm){ UI.confirm = null; render(); } });
 
