@@ -1121,10 +1121,14 @@ function compareTable(list, cur, pendingYear){
 function fitCmp(){
   document.querySelectorAll('.cmp').forEach(c => {
     const th = c.querySelectorAll('thead th'), years = th.length - 1, minW = innerWidth < 560 ? 88 : 170;
-    let k = years;
+    const labels = c.querySelectorAll('tr > :first-child'); let k = years;
     for (let pass = 0; pass < 2; pass++){
+      labels.forEach(x => { x.style.width = x.style.minWidth = x.style.maxWidth = ''; });   // measure the labels at their natural width
       const L = th[0].offsetWidth, avail = c.clientWidth - L; k = Math.max(1, Math.min(years, Math.floor(avail / minW)));
-      c.style.setProperty('--colw', Math.floor(avail / k) + 'px'); c.style.scrollPaddingLeft = L + 'px';
+      // Whole-pixel year columns; the label column takes the leftover pixels so no sliver of a hidden year shows.
+      const W = Math.floor(avail / k), Lfit = c.clientWidth - k * W;
+      c.style.setProperty('--colw', W + 'px'); c.style.scrollPaddingLeft = Lfit + 'px';
+      labels.forEach(x => { x.style.width = x.style.minWidth = x.style.maxWidth = Lfit + 'px'; });
     }
     const hint = c.previousElementSibling; if (hint && hint.classList.contains('cmp-hint')) hint.hidden = k >= years;
     c.scrollLeft = c.scrollWidth;
