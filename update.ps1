@@ -16,11 +16,13 @@ Copy-Item "$root\stance-android\stance.apk"          "$site\downloads\Stance.apk
 Copy-Item "$root\daily-tasks-android\daily-tasks.apk" "$site\downloads\TaskTracker.apk"
 Copy-Item "$root\comeback-android\comeback.apk"      "$site\downloads\Comeback.apk"
 Copy-Item "$root\ten-million-android\ten-million-ticket.apk" "$site\downloads\TenMillionTicket.apk"
+Copy-Item "$root\one-button-trio-android\one-button-trio.apk" "$site\downloads\OneButtonTrio.apk"
 
 # Browser versions of the web-based apps.
 Copy-Item "$root\tuesday\tuesday.html"      "$site\play\tuesday.html"
 Copy-Item "$root\stance-android\index.html" "$site\play\stance.html"
 Copy-Item "$root\ten-million-ticket\ten-million-ticket.html" "$site\play\ten-million-ticket.html"
+Copy-Item "$root\one-button-trio\one-button-trio.html" "$site\play\one-button-trio.html"
 
 Write-Host "Copied $($tip.Name) and the other builds into $site"
 
@@ -33,6 +35,7 @@ $versions = [ordered]@{
     'Task Tracker' = ([xml](Get-Content "$root\daily-tasks-android\AndroidManifest.xml")).manifest.versionName
     'Comeback'     = ([xml](Get-Content "$root\comeback-android\AndroidManifest.xml")).manifest.versionName
     '$10M Ticket'  = ([xml](Get-Content "$root\ten-million-android\AndroidManifest.xml")).manifest.versionName
+    'One-Button Trio' = ([xml](Get-Content "$root\one-button-trio-android\AndroidManifest.xml")).manifest.versionName
 }
 $page = Get-Content "$site\index.html" -Raw
 foreach ($app in $versions.Keys) {
