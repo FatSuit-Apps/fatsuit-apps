@@ -38,7 +38,7 @@ h1{font-family:var(--display);font-weight:700;font-size:1.9rem;line-height:1.1;m
 .lbl{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-right:2px}
 .chip{border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 14px;font:600 .9rem var(--body);cursor:pointer}
 .chip[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 14%, var(--surface))}
-canvas{display:block;width:100%;max-width:100%;aspect-ratio:3/4;border-radius:18px;border:1px solid var(--line);touch-action:manipulation;cursor:pointer;background:var(--surface);user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100%;max-width:100%;margin-inline:auto;aspect-ratio:3/4;border-radius:18px;border:1px solid var(--line);touch-action:manipulation;cursor:pointer;background:var(--surface);user-select:none;-webkit-user-select:none}
 .controls{display:flex;align-items:center;gap:18px}
 .big{width:92px;height:92px;flex:none;border-radius:50%;border:0;background:var(--accent);color:#fff;font:700 1.15rem var(--display);letter-spacing:.08em;cursor:pointer;box-shadow:0 7px 0 var(--accent-deep),0 10px 18px rgba(0,0,0,.18);transition:transform .06s,box-shadow .06s;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .big.down,.big:active{transform:translateY(6px);box-shadow:0 1px 0 var(--accent-deep),0 3px 8px rgba(0,0,0,.18)}
@@ -64,6 +64,8 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
 .when{font-size:.8rem;color:var(--muted)}
 .empty{margin:0;color:var(--muted);font-size:.9rem}
 .footnote{margin:0;font-size:.78rem;color:var(--muted)}
+/* phones: keep the skin chips and High Scores on one row */
+@media (max-width: 440px){.skins{gap:6px}.chip,.scores{padding:5px 10px;font-size:.85rem}}
 @media (prefers-reduced-motion: reduce){.big{transition:none}}
 </style>
 
@@ -486,7 +488,11 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
     });
   }
   function start(){ G.reset(); score = 0; newBest = false; state = 'play'; beep(520); }
+  // phones suspend audio when the app is left; wake it up on the next tap or return
+  function wakeAudio(){ try { if (ac && ac.state !== 'running') ac.resume().catch(() => {}); } catch(e){} }
   function press(){
+    wakeAudio();
+    if (state === 'paused'){ state = 'play'; return; }
     if (state === 'ready') return start();
     if (state === 'over'){ if (performance.now() - overAt > 350) start(); return; }
     if (state === 'play') G.tap();
@@ -1211,7 +1217,11 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
 
   function overlay(){
     ctx.fillStyle = 'rgba(12,18,22,.62)'; ctx.fillRect(0, 0, W, H);
-    if (state === 'ready'){
+    if (state === 'paused'){
+      text('Paused', W / 2, 200, 34, '#fff', 700);
+      rr(W / 2 - 92, 300, 184, 46, 23); ctx.fillStyle = '#ffd166'; ctx.fill();
+      text('Tap to resume', W / 2, 330, 20, '#1d2b36', 700);
+    } else if (state === 'ready'){
       text(G.name, W / 2, 176, 34, '#fff', 700);
       wrapText(G.rule, W / 2, 214, 290, 17, '#e8eef0');
       rr(W / 2 - 92, 300, 184, 46, 23); ctx.fillStyle = '#ffd166'; ctx.fill();
@@ -1243,9 +1253,24 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
     ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
     if (shake > 0 && !reduce){ const m = 9 * shake; ctx.translate((Math.random() - .5) * m, (Math.random() - .5) * m); }
     G.draw(); hud();
-    if (state === 'ready' || state === 'over') overlay();
+    if (state === 'ready' || state === 'over' || state === 'paused') overlay();
     requestAnimationFrame(frame);
   }
+  // a run pauses when the page or app goes to the background, and waits for a tap to resume
+  function leave(){ if (state === 'play') state = 'paused'; }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) leave(); else wakeAudio(); });
+  window.addEventListener('pagehide', leave);
+
+  // shrink the stage on short screens so the TAP button stays in view without scrolling
+  const controls = document.querySelector('.controls');
+  function sizeStage(){
+    const h = cv.getBoundingClientRect().height;
+    const rest = controls.getBoundingClientRect().bottom + window.scrollY + 12 - h;
+    cv.style.maxWidth = Math.max(240, Math.floor((window.innerHeight - rest) * .75)) + 'px';
+  }
+  window.addEventListener('resize', sizeStage);
+  if (window.ResizeObserver) new ResizeObserver(sizeStage).observe(controls);
+  if (document.fonts) document.fonts.ready.then(sizeStage);
 
   // ---------- UI wiring ----------
   // the three skin chips relabel per game: Domino Run uses colors, the others use seasons
@@ -1273,9 +1298,12 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
 
   const scoresBtn = document.getElementById('scores-btn'), board = document.getElementById('board');
   scoresBtn.addEventListener('click', e => { const open = board.hidden; board.hidden = !open; scoresBtn.setAttribute('aria-expanded', String(open)); if (open){ renderBoard(); board.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'nearest'}); } if (e.detail) scoresBtn.blur(); });
-  btn.addEventListener('pointerdown', e => { e.preventDefault(); btn.classList.add('down'); press(); });
+  // pointerdown handles touch and mouse; click is only for keyboard Enter. Android WebView reports
+  // touch clicks with detail 0 too, so skip any click that follows a pointer press.
+  let pointerAt = 0;
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); pointerAt = performance.now(); btn.classList.add('down'); press(); });
   ['pointerup','pointerleave','pointercancel'].forEach(t => btn.addEventListener(t, () => btn.classList.remove('down')));
-  btn.addEventListener('click', e => { if (e.detail === 0) press(); });
+  btn.addEventListener('click', () => { if (performance.now() - pointerAt > 800) press(); });
   cv.addEventListener('pointerdown', e => { e.preventDefault(); press(); });
   document.addEventListener('keydown', e => {
     if (e.code !== 'Space' && e.key !== ' ') return;
@@ -1287,6 +1315,7 @@ kbd{font:700 .78rem var(--body);border:1px solid var(--line);border-bottom-width
 
   gate.clearBg();
   selectGame('gate');
+  sizeStage();
   requestAnimationFrame(frame);
 })();
 </script>
