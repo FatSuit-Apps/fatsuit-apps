@@ -10,13 +10,21 @@ $tip = Get-ChildItem "$root\dist\TipOrNot-*.apk" |
     Sort-Object { [version]($_.BaseName -replace '^TipOrNot-', '') } |
     Select-Object -Last 1
 
+# Builds made with Google's test ads (see ..\android-ads) leave TEST-ADS-BUILD.txt beside
+# the app; those must never reach the site, so they are skipped.
+function Copy-Apk($from, $to) {
+    $marker = Join-Path (Split-Path $from) 'TEST-ADS-BUILD.txt'
+    if (Test-Path $marker) { Write-Warning "Skipped $(Split-Path $from -Leaf): it was built with TEST ads."; return }
+    Copy-Item $from $to
+}
+
 Copy-Item $tip.FullName                              "$site\downloads\TipOrNot.apk"
-Copy-Item "$root\tuesday-android\tuesday-again.apk"  "$site\downloads\Tuesday.apk"
-Copy-Item "$root\stance-android\stance.apk"          "$site\downloads\Stance.apk"
-Copy-Item "$root\daily-tasks-android\daily-tasks.apk" "$site\downloads\TaskTracker.apk"
-Copy-Item "$root\comeback-android\comeback.apk"      "$site\downloads\Comeback.apk"
-Copy-Item "$root\ten-million-android\ten-million-ticket.apk" "$site\downloads\TenMillionTicket.apk"
-Copy-Item "$root\one-button-trio-android\one-button-trio.apk" "$site\downloads\OneButtonTrio.apk"
+Copy-Apk "$root\tuesday-android\tuesday-again.apk"  "$site\downloads\Tuesday.apk"
+Copy-Apk "$root\stance-android\stance.apk"          "$site\downloads\Stance.apk"
+Copy-Apk "$root\daily-tasks-android\daily-tasks.apk" "$site\downloads\TaskTracker.apk"
+Copy-Apk "$root\comeback-android\comeback.apk"      "$site\downloads\Comeback.apk"
+Copy-Apk "$root\ten-million-android\ten-million-ticket.apk" "$site\downloads\TenMillionTicket.apk"
+Copy-Apk "$root\one-button-trio-android\one-button-trio.apk" "$site\downloads\OneButtonTrio.apk"
 
 # Browser versions of the web-based apps.
 Copy-Item "$root\tuesday\tuesday.html"      "$site\play\tuesday.html"
