@@ -31,6 +31,7 @@ Copy-Item "$root\tuesday\tuesday.html"      "$site\play\tuesday.html"
 Copy-Item "$root\stance-android\index.html" "$site\play\stance.html"
 Copy-Item "$root\ten-million-ticket\ten-million-ticket.html" "$site\play\ten-million-ticket.html"
 Copy-Item "$root\one-button-trio\one-button-trio.html" "$site\play\one-button-trio.html"
+Copy-Item "$root\mayors-first-term\index.html" "$site\play\mayors-first-term.html"
 
 Write-Host "Copied $($tip.Name) and the other builds into $site"
 
@@ -44,6 +45,8 @@ $versions = [ordered]@{
     'Comeback'     = ([xml](Get-Content "$root\comeback-android\AndroidManifest.xml")).manifest.versionName
     '$10M Ticket'  = ([xml](Get-Content "$root\ten-million-android\AndroidManifest.xml")).manifest.versionName
     'One-Button Trio' = ([xml](Get-Content "$root\one-button-trio-android\AndroidManifest.xml")).manifest.versionName
+    # Browser-only: the version lives in a <meta name="version"> tag.
+    "Mayor's First Term" = [regex]::Match((Get-Content "$root\mayors-first-term\index.html" -Raw -Encoding UTF8), '<meta name="version" content="([^"]+)">').Groups[1].Value
 }
 $page = Get-Content "$site\index.html" -Raw
 foreach ($app in $versions.Keys) {

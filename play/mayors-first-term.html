@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="version" content="1.0">
+<link rel="icon" href="../logo.svg">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font-size: 14px; -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>Mayor's First Term</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a municipal ledger. Sticky seal bar on top, the mayor's desk (tabs) on the left, the city wire on the right. */
+:root{
+  --bg:#E6EBE8; --paper:#F8FAF8; --paper2:#EDF1EE; --ink:#13222A; --muted:#55666B; --line:#C6D1CD;
+  --civic:#1B5960; --civic-on:#F1F7F5; --band:#1B5960; --band-ink:#EEF6F3; --band-muted:#A9C9C6;
+  --sign:#E2AF2B; --sign-ink:#13222A; --sign-soft:#F6E6B8;
+  --good:#2D7746; --warn:#9C6410; --bad:#AC392B;
+  --bl:#3A67A6; --bc:#77689F; --br:#AD4535;
+  --scrim:rgba(14,26,31,.55);
+  --f-display:'Archivo','Arial Narrow',Arial,sans-serif;
+  --f-body:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E181C; --paper:#15232A; --paper2:#1A2B32; --ink:#E2EAE7; --muted:#93A4A7; --line:#2B3D44;
+  --civic:#6CBDBA; --civic-on:#0E181C; --band:#103238; --band-ink:#E3EFEC; --band-muted:#86ABA8;
+  --sign:#E6B740; --sign-ink:#13222A; --sign-soft:#3B3220;
+  --good:#62BE80; --warn:#E2A84A; --bad:#E6695B;
+  --bl:#76A2E6; --bc:#A99BD8; --br:#E58272; --scrim:rgba(0,0,0,.6); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E181C; --paper:#15232A; --paper2:#1A2B32; --ink:#E2EAE7; --muted:#93A4A7; --line:#2B3D44;
+  --civic:#6CBDBA; --civic-on:#0E181C; --band:#103238; --band-ink:#E3EFEC; --band-muted:#86ABA8;
+  --sign:#E6B740; --sign-ink:#13222A; --sign-soft:#3B3220;
+  --good:#62BE80; --warn:#E2A84A; --bad:#E6695B;
+  --bl:#76A2E6; --bc:#A99BD8; --br:#E58272; --scrim:rgba(0,0,0,.6); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--band)}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-stretch:72%;font-weight:850;text-transform:uppercase;letter-spacing:.01em;line-height:.95;margin:0;text-wrap:balance}
+p{margin:0}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font:600 11px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+:focus-visible{outline:3px solid var(--sign);outline-offset:2px}
+.btn{font:600 14px/1.1 var(--f-body);padding:10px 14px;border-radius:5px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--civic)}
+.btn.primary{background:var(--civic);color:var(--civic-on);border-color:transparent}
+.btn.sign{background:var(--sign);color:var(--sign-ink);border-color:transparent;font-family:var(--f-display);font-stretch:80%;font-weight:800;text-transform:uppercase;letter-spacing:.03em;font-size:16px;padding:13px 18px}
+.btn.small{padding:7px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:4px;font:600 11px/1 var(--f-mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.good{color:var(--good);border-color:currentColor}.pill.bad{color:var(--bad);border-color:currentColor}.pill.warn{color:var(--warn);border-color:currentColor}
+.pill.gold{background:var(--sign-soft);color:var(--ink);border-color:transparent}
+
+/* seal bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--band);color:var(--band-ink)}
+.bar .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding-block:12px}
+.seal{width:44px;height:44px;border-radius:50%;border:2px solid var(--sign);display:grid;place-items:center;font:800 13px/1 var(--f-display);font-stretch:70%;color:var(--sign);flex:none;letter-spacing:.04em}
+.who{display:flex;align-items:center;gap:12px;min-width:0}
+.who h1{font-size:26px;color:var(--band-ink)}
+.who>div{min-width:0}
+.who h1,.who .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){.who{flex:1 1 100%}}
+.who .sub{font:500 12px/1.3 var(--f-mono);color:var(--band-muted)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;margin-left:auto}
+.stat .k{font:600 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--band-muted)}
+.stat .v{font:600 17px/1.3 var(--f-mono);font-variant-numeric:tabular-nums}
+.slots{display:flex;gap:4px;margin-top:4px}
+.slots i{width:14px;height:14px;border-radius:3px;border:2px solid var(--sign);display:block}
+.slots i.on{background:var(--sign)}
+.tabs-row{background:var(--paper);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:700 15px/1 var(--f-display);font-stretch:80%;text-transform:uppercase;letter-spacing:.04em;padding:14px 14px 12px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sign)}
+.tab .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-left:6px;vertical-align:2px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;padding-block:24px 64px;align-items:start}
+.desk{display:flex;flex-direction:column;gap:28px;min-width:0}
+.side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 96px)}
+@media (max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}.side{position:static}}
+.section{display:flex;flex-direction:column;gap:12px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.section-head h2{font-size:24px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px}
+
+/* meters */
+.meter{height:8px;background:var(--paper2);border-radius:4px;overflow:hidden;position:relative}
+.meter>b{display:block;height:100%;background:var(--civic);border-radius:4px}
+.meter.center>b{position:absolute;top:0}
+.meter.center::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+
+/* city hall */
+.blocs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.bloc{display:flex;flex-direction:column;gap:6px}
+.bloc .big{font:600 30px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.bloc .trend{font:600 12px/1 var(--f-mono)}
+@media (max-width:640px){.blocs{grid-template-columns:1fr}}
+.depts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:900px){.depts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dept{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dept .name{font-weight:600;font-size:13px;line-height:1.25;min-height:2.5em}
+.dept .row{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.dept .score{font:600 24px/1 var(--f-mono)}
+.dept .lab{font:600 11px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.06em}
+.overview{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px}
+@media (max-width:640px){.overview{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center}
+.kv .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+.spark{width:100%;height:70px;display:block}
+
+.acts{display:flex;flex-direction:column}
+.act{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.act:first-child{border-top:0}
+.act .t{font-weight:600}
+.act .h{font-size:13px;color:var(--muted)}
+.act .btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:560px){.act{grid-template-columns:1fr}.act .btns{justify-content:flex-start}}
+
+/* budget */
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-radius:8px;background:var(--sign-soft);color:var(--ink)}
+.banner.calm{background:var(--paper2)}
+.sliders{display:flex;flex-direction:column}
+.sl{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) 120px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.sl:first-child{border-top:0}
+.sl label{font-weight:600;font-size:14px}
+.sl .sub{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.sl .out{text-align:right;font:600 13px/1.3 var(--f-mono);font-variant-numeric:tabular-nums}
+.sl .out small{display:block;font-weight:400;color:var(--muted)}
+.sl .out .chg{color:var(--warn)}
+input[type=range]{width:100%;accent-color:var(--civic)}
+@media (max-width:640px){.sl{grid-template-columns:1fr auto}.sl input{grid-column:1 / -1;grid-row:2}}
+.progs{width:100%;border-collapse:collapse;font-size:14px}
+.tablebox{overflow-x:auto}
+.progs th{font:600 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid var(--ink)}
+.progs td{padding:10px 8px 10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.progs td.num{text-align:right;white-space:nowrap}
+.progs tr.cut td{color:var(--muted)}
+.progs tr.cut .pname{text-decoration:line-through}
+.progs .note{font-size:12px;color:var(--muted)}
+.toggle{font:600 12px/1 var(--f-mono);text-transform:uppercase;padding:6px 9px;border-radius:4px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.toggle.cut{background:var(--bad);color:var(--paper);border-color:transparent}
+.ledger{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:14px}
+.ledger .v{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.ledger .tot{border-top:2px solid var(--ink);padding-top:6px;font-weight:700}
+.vote{display:flex;gap:3px;flex-wrap:wrap}
+.vote i{width:16px;height:16px;border-radius:50%;background:var(--paper2);border:1px solid var(--line)}
+.vote i.y{background:var(--good);border-color:transparent}
+.vote i.n{background:var(--bad);border-color:transparent}
+
+/* players */
+.players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:700px){.players{grid-template-columns:1fr}}
+.player{display:flex;flex-direction:column;gap:10px}
+.player h3{font-size:20px}
+.player .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.player .wants{font-size:13px;color:var(--muted)}
+.player .chips{display:flex;gap:6px;flex-wrap:wrap}
+.relrow{display:flex;align-items:center;gap:10px}
+.relrow .meter{flex:1}
+.relrow .num{font-weight:600;min-width:7ch;text-align:right;font-size:13px}
+
+/* council */
+.cmgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:1100px){.cmgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cmgrid{grid-template-columns:1fr}}
+.cmcard{display:flex;flex-direction:column;gap:8px;padding:14px}
+.cmcard h3{font-size:19px}
+.cmcard .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.cmcard .wants{font-size:13px;color:var(--muted)}
+.cmcard .chips{display:flex;gap:5px;flex-wrap:wrap}
+.roll{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));column-gap:24px}
+.roll li{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.modal .roll{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.roll .dn{font:600 12px/1 var(--f-mono);color:var(--muted)}
+.roll .who2{display:flex;flex-direction:column;min-width:0;font-size:13px;line-height:1.25}
+.roll .who2 small{color:var(--muted);font-size:11px}
+
+/* side */
+.closeq{display:flex;flex-direction:column;gap:8px}
+.wire{display:flex;flex-direction:column}
+.wire li{list-style:none;padding:9px 0;border-top:1px solid var(--line);font-size:13px;line-height:1.4;display:grid;grid-template-columns:54px 1fr;gap:8px}
+.wire li:first-child{border-top:0}
+.wire .when{font:600 11px/1.5 var(--f-mono);color:var(--muted)}
+.wire .good{color:var(--good)}.wire .bad{color:var(--bad)}
+.wire ul{margin:0;padding:0}
+.promise{display:flex;flex-direction:column;gap:5px;padding:10px 0;border-top:1px solid var(--line)}
+.promise:first-of-type{border-top:0}
+.promise .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.promise .t{font-weight:700;font-size:14px}
+.promise .d{font-size:12px;color:var(--muted)}
+
+/* modal */
+.modal-wrap{position:fixed;inset:0;z-index:20;background:var(--scrim);display:grid;place-items:start center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+.modal{margin-block:auto;background:var(--paper);color:var(--ink);width:min(640px,100%);border-radius:10px;box-shadow:0 30px 60px -20px rgba(0,0,0,.45);overflow:hidden;animation:rise .22s ease-out}
+@keyframes rise{from{transform:translateY(10px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.modal{animation:none}}
+.memo-head{background:var(--band);color:var(--band-ink);padding:12px 20px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 11px/1.4 var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
+.memo-head span:last-child{color:var(--band-muted)}
+.memo-body{padding:20px;display:flex;flex-direction:column;gap:14px}
+.memo-body h2{font-size:34px}
+.memo-body .lede{font-size:16px;line-height:1.55;max-width:62ch}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{appearance:none;text-align:left;border:1px solid var(--line);background:var(--paper2);color:var(--ink);border-radius:7px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:3px;font:inherit}
+.choice:hover:not(:disabled){border-color:var(--civic);background:var(--paper)}
+.choice:disabled{opacity:.5;cursor:not-allowed}
+.choice b{font-size:15px}
+.choice span{font-size:13px;color:var(--muted)}
+.choice.sel{border-color:var(--civic);box-shadow:inset 0 0 0 1px var(--civic);background:var(--paper)}
+.outcome{border-left:4px solid var(--sign);padding:4px 0 4px 12px;font-size:15px}
+.deltas{display:flex;flex-wrap:wrap;gap:6px}
+.delta{font:600 12px/1 var(--f-mono);padding:6px 8px;border-radius:4px;background:var(--paper2)}
+.delta.up{color:var(--good)}.delta.down{color:var(--bad)}
+.foot{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.nego-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:560px){.nego-grid{grid-template-columns:1fr}}
+.odds{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--paper2);border-radius:7px}
+.odds .num{font-size:28px;font-weight:600}
+.result-big{font:900 64px/0.9 var(--f-display);font-stretch:65%;text-transform:uppercase}
+
+/* setup */
+.setup{padding-block:36px 64px;display:flex;flex-direction:column;gap:30px}
+.hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
+.hero .seal{width:96px;height:96px;font-size:22px;border-width:3px;color:var(--civic);border-color:var(--civic)}
+.hero h1{font-size:clamp(44px,8vw,96px);font-stretch:62%;font-weight:900}
+.hero p{font-size:17px;max-width:60ch;margin-top:10px;color:var(--muted)}
+@media (max-width:560px){.hero{grid-template-columns:1fr}.hero .seal{width:72px;height:72px;font-size:17px}}
+.step{display:grid;grid-template-columns:56px minmax(0,1fr);gap:16px;border-top:2px solid var(--ink);padding-top:14px}
+.step .n{font:900 40px/1 var(--f-display);font-stretch:62%;color:var(--civic)}
+.step h2{font-size:26px;margin-bottom:4px}
+.step .help{color:var(--muted);font-size:14px;margin-bottom:12px;max-width:65ch}
+@media (max-width:560px){.step{grid-template-columns:1fr;gap:6px}}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.fields{grid-template-columns:1fr}}
+.field label{display:block;font:600 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;font:500 16px/1.2 var(--f-body);padding:11px 12px;border-radius:6px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.sizes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:700px){.sizes{grid-template-columns:1fr}}
+.opt{appearance:none;text-align:left;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.opt[aria-pressed="true"]{border-color:var(--civic);box-shadow:inset 0 0 0 2px var(--civic)}
+.opt .t{font:850 22px/1 var(--f-display);font-stretch:72%;text-transform:uppercase}
+.opt .m{font:600 12px/1.4 var(--f-mono);color:var(--civic)}
+.opt .d{font-size:13px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg .opt{flex:1 1 120px;padding:10px 12px;align-items:center;text-align:center}
+.seg .opt .t{font-size:17px}
+.mix{display:flex;height:26px;border-radius:5px;overflow:hidden;margin-top:12px;font:600 11px/26px var(--f-mono);color:#fff}
+.mix span{text-align:center;white-space:nowrap;overflow:hidden;transition:flex-basis .25s}
+.chipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.chipgrid .opt .t{font-size:18px}
+.counter{font:600 12px/1 var(--f-mono);color:var(--muted)}
+.counter.ok{color:var(--good)}
+.go{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:6px;font-size:14px;max-width:calc(100% - 32px)}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<div id="modalWrap" class="modal-wrap" hidden><div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle"></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* ============ data ============ */
+const SIZES={
+  town:{label:'Town',pop:'28,000 residents',money:0.08,seats:5,events:[1,0],blurb:'Everyone has your cell number. A pothole is front-page news.'},
+  city:{label:'City',pop:'310,000 residents',money:1.1,seats:9,events:[1,.35],blurb:'Big enough for a skyline, small enough that people stop you at the grocery store.'},
+  metro:{label:'Metropolis',pop:'2.6 million residents',money:13,seats:15,events:[2,0],blurb:'National press, national problems. Two crises a quarter is normal.'}
+};
+const LEANS=[{v:-2,label:'Progressive'},{v:-1,label:'Center-left'},{v:0,label:'Purple'},{v:1,label:'Center-right'},{v:2,label:'Conservative'}];
+const DEPTS=[
+  {id:'safety',name:'Police & Fire',base:260},
+  {id:'schools',name:'Schools & Youth',base:160},
+  {id:'roads',name:'Roads & Transit',base:150},
+  {id:'housing',name:'Housing',base:80},
+  {id:'parks',name:'Parks & Environment',base:55},
+  {id:'health',name:'Health & Social Services',base:85},
+  {id:'econ',name:'Economic Development',base:45},
+  {id:'admin',name:'City Hall Operations',base:50}
+];
+const DN=Object.fromEntries(DEPTS.map(d=>[d.id,d.name]));
+const BLOCS={
+  L:{name:'Progressive',area:'Eastside',w:{schools:.2,housing:.2,health:.15,parks:.15,roads:.12,safety:.08,econ:.05,admin:.05},tax:.5},
+  C:{name:'Moderate',area:'Midtown',w:{safety:.2,roads:.2,schools:.18,econ:.14,housing:.1,health:.07,parks:.06,admin:.05},tax:1},
+  R:{name:'Conservative',area:'Northgate',w:{safety:.3,roads:.18,econ:.2,schools:.12,admin:.1,parks:.04,housing:.03,health:.03},tax:1.6}
+};
+const BC={L:'var(--bl)',C:'var(--bc)',R:'var(--br)'};
+const FACTIONS={
+  police:{name:'Police Officers Association',lean:.7,dept:'safety',donor:15,labor:true,blurb:'Wants Police & Fire funded and officers backed in public.',concession:'Approve their overtime contract'},
+  teachers:{name:'Teachers Union',lean:-.6,dept:'schools',donor:15,labor:true,blurb:'Wants schools funded and class sizes down. Will strike if pushed.',concession:'Pledge smaller class sizes'},
+  chamber:{name:'Chamber of Commerce',lean:.5,dept:'econ',donor:30,corp:true,taxLow:true,blurb:'Wants low fees, low taxes and a busy Economic Development office. Writes checks.',concession:'Cut business license fees 10%'},
+  developers:{name:'Builders & Developers Assn.',lean:.3,dept:'housing',donor:50,corp:true,blurb:'Wants fast permits and rezoning. Generous donors, very interested in favors.',concession:'Fast-track their permits'},
+  green:{name:'Green Futures Coalition',lean:-.8,dept:'parks',donor:8,blurb:'Wants parks, bike lanes and a climate plan. Turns out young voters.',concession:'Sign a climate emergency declaration'},
+  transit:{name:'Transit Workers Local 310',lean:-.4,dept:'roads',donor:12,labor:true,blurb:'Runs the buses. Wants Roads & Transit funded and no route cuts.',concession:'Guarantee no bus route cuts'},
+  neighbors:{name:'Neighborhood Associations',lean:.4,dept:'parks',donor:6,taxLow:true,blurb:'Homeowner groups. Want low property taxes, quiet streets and no new towers.',concession:'Pause new apartment approvals'},
+  tech:{name:'Halcyon Systems',lean:0,dept:'econ',donor:40,corp:true,taxLow:true,blurb:'The tech campus employs thousands here. Wants tax breaks and good transit. Hints it could move.',concession:'Expedite their campus expansion'},
+  faith:{name:'Interfaith Community Alliance',lean:-.1,dept:'health',donor:5,blurb:'Congregations running food banks and shelters. Want health and social services funded.',concession:'Partner on a faith-run shelter'},
+  ledger:{name:'The Daily Ledger',lean:-.1,dept:null,donor:0,blurb:'The local paper. Rewards transparency and decides how loud your scandals get.',concession:'Give the Ledger early budget documents',support:'Run a fair profile of me'},
+  governor:{name:'Governor’s Office',lean:.5,dept:null,donor:0,blurb:'Controls state aid and grants. Rewards mayors who make the Governor look good.',concession:'Endorse the Governor’s agenda',support:'Send state money our way'},
+  sports:{name:'Harbor Hawks (pro team)',lean:.2,dept:'econ',donor:35,corp:true,blurb:'Want a new stadium and mention other cities a lot.',concession:'Commission a stadium feasibility study'}
+};
+const PROMISES={
+  safety:{name:'Safer streets',desc:'Police & Fire rated 70+ on Election Day',lean:.5,blocs:{C:1,R:1.5},check:()=>S.svc.safety>=70,prog:()=>S.svc.safety/70},
+  roads:{name:'Fix the roads',desc:'Roads & Transit rated 70+ on Election Day',lean:.1,blocs:{C:1.5,R:1},check:()=>S.svc.roads>=70,prog:()=>S.svc.roads/70},
+  schools:{name:'Best schools in the state',desc:'Schools & Youth rated 70+ on Election Day',lean:-.4,blocs:{L:1.2,C:1},check:()=>S.svc.schools>=70,prog:()=>S.svc.schools/70},
+  housing:{name:'Homes people can afford',desc:'Housing rated 70+ on Election Day',lean:-.6,blocs:{L:1.5,C:.5},check:()=>S.svc.housing>=70,prog:()=>S.svc.housing/70},
+  parks:{name:'Greenest city in the state',desc:'Parks & Environment rated 70+ on Election Day',lean:-.7,blocs:{L:1.5},check:()=>S.svc.parks>=70,prog:()=>S.svc.parks/70},
+  health:{name:'Care for the vulnerable',desc:'Health & Social Services rated 70+ on Election Day',lean:-.5,blocs:{L:1.3,C:.5},check:()=>S.svc.health>=70,prog:()=>S.svc.health/70},
+  notax:{name:'No new taxes',desc:'Never raise property or sales tax above day-one rates',lean:.8,blocs:{R:1.5,C:1},check:()=>!S.raisedTax,prog:()=>S.raisedTax?0:1,broken:()=>S.raisedTax},
+  balanced:{name:'Balanced books',desc:'Reserve at or above its day-one level on Election Day',lean:.6,blocs:{R:1.2,C:1},check:()=>S.treasury>=S.startTreasury,prog:()=>S.treasury/S.startTreasury},
+  clean:{name:'Clean up City Hall',desc:'Integrity 70+ and at least 3 low-value programs cut',lean:0,blocs:{C:1.2,L:.6,R:.6},check:()=>S.integrity>=70&&S.cutsLow>=3,prog:()=>Math.min(1,S.integrity/70)*.5+Math.min(1,S.cutsLow/3)*.5},
+  jobs:{name:'Jobs, jobs, jobs',desc:'Economy index at 1.08 or higher on Election Day',lean:.3,blocs:{C:1.2,R:1},check:()=>S.econ>=1.08,prog:()=>(S.econ-.95)/.13}
+};
+const PROGRAMS=[
+  {id:'motorcade',name:'Mayor’s ceremonial motorcade',cost:4,dept:'admin',boost:0,low:true,note:'Four sedans and two drivers, mostly for ribbon cuttings.'},
+  {id:'permits2',name:'Second permit review office',cost:8,dept:'admin',boost:0,low:true,hater:'developers',note:'Re-reviews permits the Planning Department already approved.'},
+  {id:'mainframe',name:'Legacy mainframe support contract',cost:10,dept:'admin',boost:1,low:true,note:'Keeps a 1994 billing system running. A new system went live in 2019.'},
+  {id:'commission',name:'Commission on the Future of Commissions',cost:3,dept:'admin',boost:0,low:true,councilFan:true,note:'Meets quarterly. Has not yet issued a report.'},
+  {id:'consultants',name:'Overlapping consultant contracts',cost:14,dept:'admin',boost:1,low:true,note:'Three firms studying the same traffic corridor.'},
+  {id:'parking2',name:'Satellite parking-fine office',cost:5,dept:'admin',boost:0,low:true,note:'Open two days a week, across the street from the main office.'},
+  {id:'mounted',name:'Mounted police unit',cost:9,dept:'safety',boost:1,low:true,fan:'police',fanBloc:'R',note:'Twelve horses. Very popular at parades.'},
+  {id:'golf',name:'Municipal golf course subsidy',cost:6,dept:'parks',boost:1,low:true,fanBloc:'R',note:'Green fees cover a third of costs.'},
+  {id:'wifi',name:'Free downtown Wi-Fi pilot',cost:7,dept:'econ',boost:1,low:true,fan:'tech',note:'Draws about forty users a day.'},
+  {id:'nightbus',name:'Night bus service',cost:12,dept:'roads',boost:5,fan:'transit',fanBloc:'L',note:'Gets shift workers home after midnight.'},
+  {id:'arts',name:'After-school arts program',cost:7,dept:'schools',boost:4,fan:'teachers',fanBloc:'L',note:'Serves 3,000 kids between 3 and 6 p.m.'},
+  {id:'clinic',name:'Mobile health clinic',cost:10,dept:'health',boost:5,fan:'faith',fanBloc:'L',note:'Two vans doing checkups in neighborhoods without a doctor.'},
+  {id:'lights',name:'Downtown holiday lights',cost:5,dept:'econ',boost:2,fan:'chamber',fanBloc:'C',note:'Merchants credit it for a December sales bump.'},
+  {id:'gardens',name:'Community gardens grant',cost:3,dept:'parks',boost:3,fan:'green',note:'Forty-one lots turned into gardens.'},
+  {id:'summerjobs',name:'Youth summer jobs',cost:8,dept:'schools',boost:4,fanBloc:'C',note:'Places 1,200 teenagers in paid summer work.'},
+  {id:'cadets',name:'Police cadet academy',cost:6,dept:'safety',boost:4,fan:'police',fanBloc:'R',note:'Trains local recruits instead of hiring from out of state.'}
+];
+const OPP_NAMES=['Marguerite Okafor','Dale Pruitt','Celeste Navarro','Graham Whitlock','Priya Venkataraman','Tom Brannigan','Elena Sorokina','Marcus Bell','Rosalind Achebe','Wes Halvorsen'];
+const CM_NAMES=['Ana Delgado','Theo Marchetti','Grace Liu','Samuel Osei','Bridget Kowalski','Hector Ramirez','Naomi Feldman','Darnell Price','Ingrid Halverson','Tariq Haddad','Colleen Murphy','Ray Nakamura','Fatima Bello','Doug Ferris','Lucia Moretti','Kwame Asante','Helen Park','Vince Albano','Rosa Esposito','Owen Gallagher'];
+const DISTRICTS={L:['Eastside','Harborview','Old Mill','Canal Street','University Hill','Little Saigon','Brickyard'],C:['Midtown','Riverside','Union Square','Fairgrounds','Market District','Westgate','Ferry Landing'],R:['Northgate','Pine Hills','Lakeshore','Cedar Ridge','Airport Road','Fox Hollow','Quarry Heights']};
+const PETS={
+  L:[{name:'Eastside branch library',dept:'schools',cost:6},{name:'Tenant legal-aid clinic',dept:'housing',cost:5},{name:'Protected bike boulevard',dept:'roads',cost:5},{name:'Community health center wing',dept:'health',cost:7},{name:'Youth soccer fields',dept:'parks',cost:4},{name:'Lead pipe replacement',dept:'health',cost:6},{name:'Public housing repairs',dept:'housing',cost:7}],
+  C:[{name:'Midtown streetscape',dept:'econ',cost:5},{name:'Senior center roof',dept:'health',cost:4},{name:'Riverside flood wall',dept:'roads',cost:8},{name:'Small-business façade grants',dept:'econ',cost:5},{name:'Rec center pool',dept:'parks',cost:6},{name:'School crossing guards',dept:'schools',cost:4},{name:'Traffic signal upgrades',dept:'roads',cost:5}],
+  R:[{name:'Northgate police substation',dept:'safety',cost:7},{name:'Airport Road widening',dept:'roads',cost:8},{name:'Business park sewer upgrade',dept:'econ',cost:6},{name:'Fire station renovation',dept:'safety',cost:6},{name:'Little league complex',dept:'parks',cost:5},{name:'Neighborhood watch cameras',dept:'safety',cost:4},{name:'Industrial park access road',dept:'econ',cost:6}]
+};
+const TRAITS={
+  dealmaker:{name:'Dealmaker',h:'Easy to bargain with.'},
+  principled:{name:'Principled',h:'Votes on substance. Insulted by patronage.'},
+  ambitious:{name:'Ambitious',h:'Eyeing your job. Cools over time and resists endorsing you.'},
+  oldguard:{name:'Old guard',h:'Hates cutting established programs.'}
+};
+const STANCE=[[.65,'Yes','good'],[.55,'Leaning yes','good'],[.45,'Undecided','warn'],[.35,'Leaning no','bad'],[-9,'No','bad']];
+
+/* ============ helpers ============ */
+let S=null, SETUP=null, NEGO=null, CUR=null;
+const SAVE_KEY='mayors-first-term-v1';
+const $=(s,el=document)=>el.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const chance=p=>Math.random()<p;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sgn=(n,d=0)=>(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(d);
+function money(pts,f){const m=pts*(f??SIZES[S.size].money);const a=Math.abs(m);let s;
+  if(a>=1000)s='$'+(a/1000).toFixed(a>=10000?1:2)+'B';else if(a>=1)s='$'+a.toFixed(a>=100?0:1)+'M';else s='$'+Math.round(a*1000)+'K';
+  return (m<-.0005?'−':'')+s;}
+const cmoney=pts=>money(pts,SIZES[S.size].money*0.01);
+const has=f=>S&&(f==='council'?!!S.council:S.rel[f]!==undefined);
+const cm=id=>S.council.find(m=>m.id===id);
+const councilAvg=()=>S.council.reduce((s,m)=>s+m.rel,0)/S.council.length;
+const year=q=>Math.ceil(q/4), qtr=q=>((q-1)%4)+1;
+const when=q=>`Y${year(q)} Q${qtr(q)}`;
+function mood(b,x){(b==='all'?['L','C','R']:[b]).forEach(k=>S.blocs[k].mood+=x)}
+function rel(f,x){if(f==='council'){S.council.forEach(m=>m.rel=clamp(m.rel+x,-100,100));return}if(has(f))S.rel[f]=clamp(S.rel[f]+x,-100,100)}
+function crel(m,x){m.rel=clamp(m.rel+x,-100,100)}
+function cash(x){S.treasury+=x}
+function qual(d,x){S.svc[d]=clamp(S.svc[d]+x,0,100)}
+function bump(d,x){S.budget[d]=clamp(S.budget[d]+x,50,150);if(S.pend)S.pend.budget[d]=S.budget[d]}
+function integ(x){S.integrity=clamp(S.integrity+x,0,100)}
+function expo(x){S.exposure=clamp(S.exposure+x,0,100)}
+function stress(x){S.stress=clamp(S.stress+x,0,100)}
+function fam(x){S.family=clamp(S.family+x,0,100)}
+function percep(x){S.perception=clamp(S.perception+x,-100,100)}
+function raise(x){S.chest+=x;S.raised+=x}
+function news(t,tone=''){S.news.unshift({q:S.q,t,tone});S.news=S.news.slice(0,40)}
+function popShares(l){const L=.34-.1*l,R=.30+.1*l;return {L,C:1-L-R,R}}
+function approval(){return ['L','C','R'].reduce((s,b)=>s+S.pop[b]*S.blocs[b].appr,0)}
+function qLabel(v){return v<30?['Failing','bad']:v<45?['Strained','warn']:v<60?['Adequate','']:v<75?['Good','good']:['Excellent','good']}
+function relLabel(v){return v>=60?['Allied','good']:v>=25?['Friendly','good']:v>-25?['Neutral','']:v>-60?['Cool','warn']:['Hostile','bad']}
+function weakestBloc(){return ['L','C','R'].sort((a,b)=>S.blocs[a].appr-S.blocs[b].appr)[0]}
+function strongestBloc(){return ['L','C','R'].sort((a,b)=>S.blocs[b].appr-S.blocs[a].appr)[0]}
+function peace(f){return S.peace[f]&&S.peace[f]>=S.q}
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return s&&s.v===1?upgradeSave(s):null}catch(e){return null}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+
+/* ============ fiscal model (annual "budget points"; 1 point = size.money $M) ============ */
+function revenue(t=S.tax){
+  const prop=470*(t.prop/1.1),sales=290*(t.sales/1.5)*(1-.12*Math.max(0,t.sales-1.5)),fees=110*t.fees;
+  const aid=90*(has('governor')?1+S.rel.governor/400:1);
+  const local=(prop+sales+fees)*S.econ;
+  return {prop:prop*S.econ,sales:sales*S.econ,fees:fees*S.econ,aid,adj:S.revAdj,total:local+aid+S.revAdj};
+}
+function spending(b=S.budget,progs=S.programs,pets=S.pets){
+  let depts=0;DEPTS.forEach(d=>depts+=d.base*b[d.id]/100);
+  let pr=0;PROGRAMS.forEach(p=>{if(progs[p.id])pr+=p.cost});
+  let dp=0;S.council.forEach(m=>{if(pets[m.id])dp+=m.pet.cost});
+  const debt=25+Math.max(0,-S.treasury)*.08+S.debtAdj;
+  return {depts,programs:pr,districts:dp,debt,other:S.spendAdj,total:depts+pr+dp+debt+S.spendAdj};
+}
+function target(d,b=S.budget,progs=S.programs,pets=S.pets){
+  let t=50+(b[d]-100)*1.1;PROGRAMS.forEach(p=>{if(p.dept===d&&progs[p.id])t+=p.boost});
+  S.council.forEach(m=>{if(m.pet.dept===d&&pets[m.id])t+=2});
+  return clamp(t+(S.qBonus[d]||0),5,98);
+}
+
+/* ============ city council: one member per district ============ */
+function makeCouncil(seats,pop,mayorLean){
+  const names=[...CM_NAMES].sort(()=>Math.random()-.5),used={L:0,C:0,R:0};
+  const order=['L','C','R'].flatMap(b=>Array(Math.round(pop[b]*seats)).fill(b));
+  while(order.length<seats)order.push('C');order.length=seats;order.sort(()=>Math.random()-.5);
+  const traits=Object.keys(TRAITS);
+  return order.map((b,i)=>{const k=used[b]++;const base=PETS[b][k%PETS[b].length];
+    const lean={L:-.7,C:0,R:.7}[b];
+    return {id:'d'+(i+1),n:i+1,name:names[i],bloc:b,district:DISTRICTS[b][k%DISTRICTS[b].length],
+      trait:chance(.6)?pick(traits):null,rel:Math.round(10-Math.abs(lean-mayorLean)*25+rnd(-10,10)),
+      pet:{name:base.name+(k>=PETS[b].length?' (phase 2)':''),dept:base.dept,cost:base.cost},voteP:false,endorse:false}});
+}
+function memberScore(m,p=S.pend){
+  const B=BLOCS[m.bloc];let s=.5+m.rel/150+(approval()-50)/150,align=0;
+  DEPTS.forEach(d=>align+=(p.budget[d.id]-S.budget[d.id])*B.w[d.id]*.02);
+  const hike=(p.tax.prop-S.tax.prop)/.1+(p.tax.sales-S.tax.sales)/.25+(p.tax.fees-S.tax.fees)/.1;
+  align-=hike*B.tax*.03;
+  PROGRAMS.forEach(pr=>{if(S.programs[pr.id]&&!p.programs[pr.id]){
+    if(!pr.low&&pr.fanBloc===m.bloc)align-=.06;
+    if(!pr.low&&m.trait==='oldguard')align-=.05;
+    if(pr.low&&m.trait==='principled')align+=.02}});
+  s+=align*(m.trait==='principled'?1.5:1);
+  if(p.pets[m.id])s+=.2;
+  if(S.pets[m.id]&&!p.pets[m.id])s-=.3;
+  if(m.trait==='principled')S.council.forEach(o=>{if(o!==m&&p.pets[o.id]&&!S.pets[o.id])s-=.02});
+  // members judge the change in the deficit, not the deficit you inherited
+  const dBal=(revenue(p.tax).total-spending(p.budget,p.programs,p.pets).total)-(revenue().total-spending().total);
+  const hawk={L:.6,C:1,R:1.5}[m.bloc];
+  s+=dBal<0?-Math.min(.15,-dBal/250)*hawk:Math.min(.08,dBal/400)*hawk;
+  if(m.voteP)s+=.35;
+  return s;
+}
+function stance(s){return STANCE.find(x=>s>=x[0])}
+function fundamental(b){
+  const B=BLOCS[b];let svc=0;for(const d in B.w)svc+=B.w[d]*S.svc[d];
+  const t=S.tax;const taxPain=B.tax*((t.prop-1.1)*25+(t.sales-1.5)*8+(t.fees-1)*15);
+  const defPain=S.treasury<0?({L:.4,C:1,R:1.5}[b])*Math.min(12,-S.treasury/20):0;
+  const p=S.perception;const perc=b==='L'?-p*.08:b==='C'?-Math.abs(p)*.02:p*.04;
+  return 15+svc*.7-taxPain-defPain+perc+(S.integrity-60)*.15+(S.scandal?-4:0);
+}
+
+/* ============ setup ============ */
+function defaultSetup(){return {mayor:'Jordan Reyes',city:'Port Calder',size:'city',lean:-1,factions:['police','teachers','chamber','developers','ledger'],promises:['roads','schools','balanced']}}
+function newGame(c){
+  const mayorLean=c.promises.reduce((s,p)=>s+PROMISES[p].lean,0)/c.promises.length;
+  const pop=popShares(c.lean);
+  S={v:1,mayor:c.mayor.trim()||'Jordan Reyes',city:c.city.trim()||'Port Calder',size:c.size,lean:c.lean,promises:c.promises.slice(),
+    q:1,slots:3,slotPenalty:0,tab:'hall',treasury:140,startTreasury:140,econ:1,econShock:0,
+    tax:{prop:1.1,sales:1.5,fees:1},startTax:{prop:1.1,sales:1.5,fees:1},
+    budget:Object.fromEntries(DEPTS.map(d=>[d.id,100])),svc:{},qBonus:{},
+    programs:Object.fromEntries(PROGRAMS.map(p=>[p.id,true])),audited:false,
+    pop,blocs:{},rel:{},pledged:{},peace:{},commitments:[],
+    integrity:68,exposure:5,stress:25,family:70,perception:0,chest:20,raised:20,reach:0,prep:0,debate:0,
+    cutsLow:0,raisedTax:false,grantYear:0,revAdj:0,spendAdj:0,debtAdj:0,
+    news:[],queue:[],used:[],seen:{},scandal:false,scandalPending:false,lowStreak:0,opp:null,over:null,history:[],
+    budgetSession:true,budgetSubmitted:false,govLean:pick([-.6,.6]),mayorLean,flags:{}};
+  
+  DEPTS.forEach(d=>S.svc[d.id]=clamp(46+rnd(-10,10)+(c.size==='metro'&&(d.id==='roads'||d.id==='housing')?-7:0)+(c.size==='town'&&d.id==='housing'?8:0),20,80));
+  ['L','C','R'].forEach(b=>{let a=55+rnd(-4,4);c.promises.forEach(p=>{if(PROMISES[p].blocs[b])a+=1.5*PROMISES[p].blocs[b]});S.blocs[b]={appr:a,mood:0}});
+  S.council=makeCouncil(SIZES[c.size].seats,pop,mayorLean);S.pets={};
+  c.factions.forEach(f=>{const lean=f==='governor'?S.govLean:FACTIONS[f].lean;S.rel[f]=Math.round(15-Math.abs(lean-mayorLean)*30+rnd(-8,8))});
+  S.history.push(approval());
+  syncPend();
+  news(`${S.mayor} sworn in as mayor of ${S.city}.`,'good');
+  startQuarter();
+}
+function syncPend(){S.pend={budget:{...S.budget},tax:{...S.tax},programs:{...S.programs},pets:{...S.pets}};
+  (S.commitments||[]).forEach(c=>{if(c.m)S.pend.pets[c.m]=true})}
+// saves from before the council update get a council on load
+function upgradeSave(s){
+  if(s&&!s.council){const prev=S;S=s;s.council=makeCouncil(SIZES[s.size].seats,s.pop,s.mayorLean||0);
+    const r=s.rel.council||0;s.council.forEach(m=>m.rel=Math.round(m.rel/2+r));delete s.rel.council;s.pets={};syncPend();S=prev}
+  return s;
+}
+
+/* ============ quarter flow ============ */
+function startQuarter(){
+  S.slots=Math.max(0,3-S.slotPenalty);S.slotPenalty=0;
+  S.budgetSession=(S.q-1)%4===0;S.budgetSubmitted=false;syncPend();
+  const q=[];
+  if(S.q===1)q.push('inaug');
+  if(S.q===13)q.push('challenger');
+  if(S.q===16)q.push('debate1','debate2','debate3');
+  if(S.scandalPending){q.push('scandal');S.scandalPending=false}
+  if(S.stress>=75&&cool('burnout',3))q.push('burnout');
+  if(S.family<30&&cool('familycrisis',3))q.push('familycrisis');
+  const [n,extra]=SIZES[S.size].events;let draws=n+(chance(extra)?1:0);
+  if(S.q===1||S.q===16)draws=Math.max(0,draws-1);
+  for(let i=0;i<draws;i++){const e=drawEvent(q);if(e)q.push(e)}
+  S.queue=q;save();render();nextEvent();
+}
+function cool(id,n){return S.seen[id]===undefined||S.q-S.seen[id]>=n}
+function drawEvent(already){
+  const pool=EVENTS.filter(e=>!e.special&&!already.includes(e.id)&&(e.repeat?cool(e.id,e.repeat):!S.used.includes(e.id))&&(!e.fac||has(e.fac))&&(!e.labor||!peace(e.fac))&&(!e.cond||e.cond()));
+  if(!pool.length)return null;
+  let tot=pool.reduce((s,e)=>s+(e.w||1),0),r=Math.random()*tot;
+  for(const e of pool){r-=(e.w||1);if(r<=0)return e.id}
+  return pool[0].id;
+}
+function endQuarter(){
+  const before={appr:approval(),blocs:Object.fromEntries(['L','C','R'].map(b=>[b,S.blocs[b].appr])),q:{...S.svc},treasury:S.treasury,econ:S.econ};
+  const rev=revenue(),sp=spending();const net=(rev.total-sp.total)/4;
+  S.treasury+=net;
+  DEPTS.forEach(d=>{const t=target(d.id);S.svc[d.id]=clamp(S.svc[d.id]+(t-S.svc[d.id])*.24+rnd(-2,2),0,100)});
+  for(const k in S.qBonus)S.qBonus[k]*=.5;
+  const t=S.tax;const drag=.004*((t.prop-1.1)/.3)+.003*((t.sales-1.5)/.5)+.004*((t.fees-1)/.15);
+  S.econ=clamp(S.econ+.003+(S.svc.econ-50)*.0001+(S.svc.roads-50)*.00006-drag+rnd(-.006,.006)+S.econShock,.75,1.35);S.econShock=0;
+  // voters: this quarter's news lands, then opinion drifts toward fundamentals
+  ['L','C','R'].forEach(b=>{const B=S.blocs[b];B.appr+=B.mood;B.mood=0;B.appr=clamp(B.appr+(fundamental(b)-B.appr)*.2,3,97)});
+  // players
+  const taxIdx=(t.prop-1.1)/.1+(t.sales-1.5)/.25+(t.fees-1)/.1;
+  for(const f in S.rel){const F=FACTIONS[f];let d=-S.rel[f]*.03;
+    if(F.dept){d+=clamp((S.budget[F.dept]-100)*.06,-3,3);if(F.labor&&S.budget[F.dept]<95)d-=1}
+    if(F.taxLow)d-=taxIdx*.5;
+    if(f==='ledger')d+=(S.integrity-60)*.04;
+    S.rel[f]=clamp(S.rel[f]+d,-100,100)}
+  // council members: popularity helps, a funded district project keeps them sweet
+  S.council.forEach(m=>{crel(m,-m.rel*.03+(approval()-50)*.05+(S.pets[m.id]?1:0)+(m.trait==='ambitious'?-1.5:0)+(S.blocs[m.bloc].appr-50)*.03)});
+  // commitments
+  S.commitments=S.commitments.filter(c=>{if(c.due!==S.q)return true;
+    if(c.m){const m=cm(c.m);
+      if(S.pets[c.m]){crel(m,5);news(`Council member ${m.name} thanks you for funding the ${m.pet.name}.`,'good')}
+      else{crel(m,-35);integ(-4);rel('council',-3);crel(m,3);news(`${m.name} (District ${m.n}): “The mayor promised the ${m.pet.name} and walked away.”`,'bad')}
+      return false}
+    if(S.budget[c.dept]>=c.min){rel(c.f,5);news(`${FACTIONS[c.f].name} credit you for keeping your word on ${DN[c.dept]}.`,'good')}
+    else{rel(c.f,-30);integ(-5);news(`${FACTIONS[c.f].name}: “The mayor broke a promise to us.”`,'bad')}
+    return false});
+  // private life
+  stress(6);fam(-5);expo(-2);
+  if(S.stress>=100){S.slotPenalty=2;S.stress=60;news(`${S.mayor} hospitalized for exhaustion; schedule cleared.`,'bad')}
+  if(S.family<=0){S.family=20;expo(15);mood('all',-3);news('Tabloids report trouble at home for the mayor.','bad')}
+  // scandal risk
+  const sp2=S.exposure/300*(has('ledger')?1-S.rel.ledger/200:.8);
+  if(!S.scandal&&chance(sp2))S.scandalPending=true;
+  if(S.scandal&&chance(.4))S.scandal=false;
+  // annual promise check
+  if(S.q%4===0)S.promises.forEach(id=>{const P=PROMISES[id];const ok=P.check();for(const b in P.blocs)mood(b,(ok?1:-1)*P.blocs[b]);
+    news(`Report card: “${P.name}” is ${ok?'on track':P.broken&&P.broken()?'broken':'behind'}.`,ok?'good':'bad')});
+  // opponent grows
+  if(S.opp)S.opp.chest+=30+Object.keys(S.rel).filter(f=>S.rel[f]<=-40&&FACTIONS[f].donor).length*8;
+  // wire
+  DEPTS.forEach(d=>{const a=before.q[d.id],b=S.svc[d.id];if(a>=45&&b<45)news(`${DN[d.id]} slipping: residents report longer waits.`,'bad');if(a<70&&b>=70)news(`${DN[d.id]} earns top marks in a citizen survey.`,'good')});
+  if(before.treasury>=0&&S.treasury<0)news('City reserve runs dry; Finance begins short-term borrowing.','bad');
+  if(S.econ-before.econ>.008)news('Hiring picks up across the city.','good');
+  if(S.econ-before.econ<-.008)news('Storefront vacancies tick up downtown.','bad');
+  const a=approval();S.history.push(a);
+  if(S.treasury<-300)S.over='bankrupt';
+  if(a<25){S.lowStreak++;if(S.lowStreak>=2)S.over='recall'}else S.lowStreak=0;
+  if(S.integrity<8)S.over='resign';
+  const report={q:S.q,rev,sp,net,before,after:{appr:a,blocs:Object.fromEntries(['L','C','R'].map(b=>[b,S.blocs[b].appr])),q:{...S.svc},treasury:S.treasury,econ:S.econ}};
+  S.q++;save();showReport(report);
+}
+function afterReport(){
+  if(S.over){showEnding(S.over);return}
+  if(S.q>16){showElection();return}
+  startQuarter();
+}
+
+/* ============ events ============ */
+const EVENTS=[
+{id:'inaug',special:true,kicker:'Day one',title:'Inauguration day',body:()=>`The oath is done, the confetti is swept up, and the transition binder is three inches thick. The city reserve holds ${money(S.startTreasury)}, and Finance projects a structural deficit. Your chief of staff wants to know where the first hundred days go.`,
+  choices:()=>S.promises.map(id=>({t:`Lead with “${PROMISES[id].name}”`,h:PROMISES[id].desc,f:()=>{const d=DN[id]?id:null;
+    if(d){qual(d,6);mood('all',1);return `You put ${DN[d]} at the top of the agenda. Early results are visible by spring.`}
+    if(id==='notax'){mood('R',3);mood('C',1);return 'You sign a symbolic pledge on the City Hall steps. Northgate cheers.'}
+    if(id==='balanced'){cash(12);mood('L',-1);mood('R',2);return 'A hiring freeze takes effect at noon. Departments grumble; Finance exhales.'}
+    if(id==='clean'){integ(5);rel('ledger',5);return 'You publish every department’s contracts online. Reporters start reading.'}
+    if(id==='jobs'){S.econShock+=.01;rel('chamber',5);return 'You tour three factories and sign a small-business grant order.'}}}))},
+{id:'challenger',special:true,kicker:'Politics',title:'A challenger enters the race',body:()=>{makeOpp();return `${S.opp.name} files paperwork to run against you. ${S.opp.pitch} Election Day is four quarters away. The Campaign tab is now open.`},
+  choices:[{t:'Keep governing for now',h:'Voters notice who is doing the job',f:()=>{mood('C',1);return 'You decline to comment. “I have a city to run.”'}},
+    {t:'Launch your campaign tonight',h:'Spend from the war chest for an early start',f:()=>{S.chest=Math.max(0,S.chest-10);S.reach+=3;return 'A packed launch event in Midtown. Volunteers sign up by the hundred.'}}]},
+{id:'debate1',special:true,kicker:'Debate · 1 of 3',title:'Moderator: “Will you raise taxes?”',body:()=>{S.debate=Math.min(3,S.prep*.75)-(S.stress>75?1:0);return `The lights are hot. ${S.opp.name} is smiling. ${S.prep?'Your prep sessions pay off: you know the numbers cold.':'You did not prepare much for this.'}`},
+  choices:[{t:'Defend my record on rates',h:'Strong if you never raised taxes',f:()=>{S.debate+=S.raisedTax?-1:1.2;return S.raisedTax?`${S.opp.name} reads your tax votes aloud. Ouch.`:'You point out that rates are where you found them.'}},
+    {t:'Promise a tax cut',h:'Popular in Northgate; risky with a weak reserve',f:()=>{S.debate+=1;mood('R',3);mood('L',-1);if(S.treasury<0)integ(-3);return 'The crowd applauds. The fact-checkers sharpen their pencils.'}},
+    {t:'Explain what taxes buy',h:'Appeals to progressives and moderates',f:()=>{S.debate+=.5;mood('L',2);mood('C',1);return 'You walk through the budget line by line. It is wonky, but it lands.'}}]},
+{id:'debate2',special:true,kicker:'Debate · 2 of 3',title:'Moderator: “Is the city safe?”',body:()=>`Police & Fire is rated ${Math.round(S.svc.safety)}. ${S.opp.name} has a crime stat ready.`,
+  choices:[{t:'More officers on the street',h:'Plays well right, poorly left',f:()=>{S.debate+=.6;mood('R',3);mood('L',-2);return 'You promise a hiring push. The union nods from the second row.'}},
+    {t:'Prevention and services',h:'Plays well left, poorly right',f:()=>{S.debate+=.6;mood('L',3);mood('R',-2);return 'You talk about youth jobs and mental-health responders.'}},
+    {t:'Point to the results',h:'Only as good as your Police & Fire rating',f:()=>{const v=(S.svc.safety-55)/10;S.debate+=v;return v>0?'The numbers are on your side, and you know it.':'The numbers are not on your side, and everyone knows it.'}}]},
+{id:'debate3',special:true,kicker:'Debate · 3 of 3',title:'Closing statements',body:()=>`Ninety seconds. Last word goes to you.`,
+  choices:[{t:'Attack my opponent’s record',h:'Effective, a little ugly',f:()=>{S.debate+=1;integ(-2);mood('C',-1);return `You land a hit on ${S.opp.name}. The room gasps.`}},
+    {t:'Run through promises kept',h:'Only as good as your record',f:()=>{const k=S.promises.filter(p=>PROMISES[p].check()).length;S.debate+=k-1;return k>=2?'You tick off promise after promise. It sounds like a winning record.':'The list is shorter than you hoped.'}},
+    {t:'Tell a personal story',h:'Works if your home life is steady',f:()=>{S.debate+=.5+(S.family-50)/40;return S.family>=50?'You talk about your family and the city that raised you. People tear up.':'It rings a little hollow; everyone has read the tabloids.'}}]},
+{id:'scandal',special:true,kicker:'Crisis',title:'The Ledger runs the story',body:()=>`A front-page investigation pulls together everything reporters have learned: the donors, the favors, the friends. Your phone has 64 missed calls.`,
+  choices:[{t:'Apologize and order an independent review',h:'Painful now, clears the air',f:()=>{mood('all',-6);integ(5);S.exposure=0;S.scandal=true;return 'You take questions for an hour. It is brutal, and it is over.'}},
+    {t:'Deny everything',h:'Might blow over. Might not.',f:()=>{if(chance(.5)){mood('all',-2);S.exposure=Math.max(S.exposure,30);return 'The story fades after a week. For now.'}mood('all',-9);integ(-8);S.scandal=true;S.exposure=50;return 'A second story proves the first. Now it is a cover-up.'}},
+    {t:'Blame a senior staffer',h:'Saves you some face, costs you trust',f:()=>{mood('all',-3);integ(-6);rel('council',-5);S.exposure=Math.round(S.exposure/2);S.scandal=true;return 'Your deputy resigns. The building notices how fast you threw them overboard.'}}]},
+{id:'burnout',special:true,kicker:'Private',title:'Your doctor wants a word',body:()=>`Blood pressure is up, sleep is down, and you snapped at a reporter on Tuesday. Your doctor says to cut back or plan on a hospital stay.`,
+  choices:[{t:'Clear a week of the calendar',h:'Lose an agenda slot this quarter',f:()=>{S.slots=Math.max(0,S.slots-1);stress(-22);fam(5);return 'You spend a week at home. The city survives.'}},
+    {t:'Push through',h:'Stress keeps climbing',f:()=>{stress(5);if(chance(.3)){mood('all',-2);return 'You are caught on a hot mic insulting a council member.'}return 'Coffee, adrenaline, and a lot of concealer.'}}]},
+{id:'familycrisis',special:true,kicker:'Private',title:'“You’re never home”',body:()=>`Your partner says it plainly over a cold dinner: the job is swallowing the family, and something has to give.`,
+  choices:[{t:'Promise real time, and keep it',h:'Lose an agenda slot this quarter',f:()=>{S.slots=Math.max(0,S.slots-1);fam(22);stress(-6);return 'Sunday mornings are now off-limits to staff.'}},
+    {t:'Promise, then go back to work',h:'Things at home get worse',f:()=>{fam(-8);expo(5);return 'A neighbor mentions to a reporter that the mayor’s car is never in the driveway.'}}]},
+{id:'watermain',kicker:'Public Works',title:'Water main bursts under Market Street',body:()=>`A ninety-year-old main gave way at 6 a.m. Market Street is a river and two hundred businesses have no water. Public Works can replace the segment or patch it.`,
+  choices:[{t:'Replace the whole segment',h:'Expensive now, fewer breaks later',f:()=>{cash(-22);qual('roads',4);mood('C',2);return 'Crews work around the clock. The new main is rated for a century.'}},
+    {t:'Patch it and move on',h:'Cheap, but the pipes stay old',f:()=>{cash(-4);qual('roads',-5);mood('C',-2);return 'The patch holds for now. The engineers are not happy.'}},
+    {t:'Blame the last administration',h:'Costs little, looks petty',f:()=>{cash(-4);integ(-2);mood('R',1);mood('C',-1);return 'Your predecessor calls it “cheap politics.” The pipe still gets patched.'}}]},
+{id:'strike',fac:'teachers',labor:true,cond:()=>S.budget.schools<108,kicker:'Labor',title:'Teachers schedule a strike vote',body:()=>`The Teachers Union says classrooms are overcrowded and pay is behind neighboring districts. The vote is Friday.`,
+  choices:[{t:'Meet their demands',h:'Schools funding rises 8%',f:()=>{bump('schools',8);rel('teachers',15);mood('L',3);mood('R',-1);return 'A deal is signed at 2 a.m. Classes go on.'}},
+    {t:'Hold the line',h:'A coin flip on a walkout',f:()=>{if(chance(.5)){qual('schools',-12);rel('teachers',-20);mood('L',-5);mood('C',-3);return 'They walk. Schools close for nine days.'}rel('teachers',-8);mood('R',2);return 'The vote fails narrowly. The resentment does not.'}},
+    {t:'Bring in a mediator',h:'Small cost and a smaller raise',f:()=>{cash(-3);bump('schools',3);rel('teachers',4);return 'A retired judge brokers a modest deal.'}}]},
+{id:'taxbreak',fac:'tech',kicker:'Economy',title:'Halcyon Systems asks for a tax break',body:()=>`Halcyon wants a ten-year abatement for its campus expansion. Its letter mentions a competing offer from another state twice.`,
+  choices:[{t:'Grant the full abatement',h:'Jobs now, less revenue for years',f:()=>{S.econShock+=.03;S.revAdj-=15;rel('tech',20);mood('L',-4);integ(-2);return 'Ground breaks on Building C. Progressives call it a giveaway.'}},
+    {t:'Counter with a local-hiring deal',h:'Smaller break, strings attached',f:()=>{S.econShock+=.015;S.revAdj-=7;rel('tech',5);mood('C',1);return 'Halcyon agrees to hire 40% locally. Both sides claim victory.'}},
+    {t:'Say no',h:'Protects revenue; they may sulk',f:()=>{rel('tech',-20);S.econShock-=.01;mood('L',2);return 'Halcyon “pauses” the expansion.'}}]},
+{id:'stadium',fac:'sports',kicker:'Economy',title:'The Hawks threaten to leave',body:()=>`The Harbor Hawks say their stadium is obsolete. They want a public subsidy, or they start talking to other cities.`,
+  choices:[{t:'Fund a new stadium',h:'Large cost spread over years',f:()=>{cash(-30);S.spendAdj+=12;S.econShock+=.015;rel('sports',25);mood('L',-5);mood('C',1);rel('chamber',6);return 'Renderings unveiled. The bond payments start next quarter.'}},
+    {t:'Offer a land swap only',h:'No cash, some side-deal smell',f:()=>{rel('sports',5);integ(-3);expo(6);return 'The team gets a waterfront parcel. Questions about its appraisal follow.'}},
+    {t:'Let them walk',h:'Saves money, breaks some hearts',f:()=>{rel('sports',-40);mood('C',-3);mood('R',-2);S.econShock-=.01;S.flags.hawksGone=true;return 'Season-ticket holders burn jerseys outside City Hall.'}}]},
+{id:'heat',repeat:6,kicker:'Emergency',title:'Heat wave',body:()=>`Five straight days over 100°F. Hospitals report heat-stroke cases among elderly residents and unhoused people.`,
+  choices:[{t:'Open cooling centers citywide',h:'Moderate cost',f:()=>{cash(-8);qual('health',3);mood('L',2);rel('faith',5);return 'Libraries and gyms stay open around the clock.'}},
+    {t:'Issue an advisory and wait',h:'Free, if nothing goes wrong',f:()=>{if(chance(.4)){mood('all',-4);qual('health',-4);return 'Several deaths are reported. The city is blamed.'}return 'The heat breaks on day six. You got lucky.'}}]},
+{id:'video',fac:'police',kicker:'Public safety',title:'Video of a violent arrest goes viral',body:()=>`A bystander’s phone video shows officers tackling a teenager outside a bus station. Ten million views by morning.`,
+  choices:[{t:'Back the officers',h:'Union loves it; Eastside will not',f:()=>{rel('police',15);mood('R',3);mood('L',-8);return 'You call it a split-second decision. Protesters gather by dusk.'}},
+    {t:'Order an independent review',h:'Middle path',f:()=>{rel('police',-8);mood('L',3);mood('C',2);integ(3);return 'A retired judge will report within ninety days.'}},
+    {t:'Suspend the officers now',h:'Union furious',f:()=>{rel('police',-20);mood('L',6);mood('R',-3);qual('safety',-3);return 'The union calls a sick-out. Response times slip for a week.'}}]},
+{id:'envelope',fac:'developers',kicker:'Ethics',title:'An envelope on your desk',body:()=>`A developer’s lobbyist leaves an “early campaign contribution” with your scheduler, along with a note about the Riverside rezoning.`,
+  choices:[{t:'Return it publicly',h:'Integrity up; developers cool',f:()=>{integ(8);rel('developers',-15);rel('ledger',6);return 'You hold up the envelope at a press conference. Cameras love it.'}},
+    {t:'Accept it quietly',h:'Money now, risk later',f:()=>{raise(60);integ(-8);expo(28);return 'The money goes into the campaign account. Nobody saw. Probably.'}},
+    {t:'Accept it and push the rezoning',h:'Money, housing, and real risk',f:()=>{raise(60);qual('housing',5);rel('developers',12);expo(40);integ(-10);return 'Riverside is rezoned 7–2. Somebody at the Ledger starts asking why.'}}]},
+{id:'camp',kicker:'Housing',title:'An encampment fills City Hall Park',body:()=>`About eighty tents now line the paths outside your window. Business owners want it gone; advocates want housing.`,
+  choices:[{t:'Clear it',h:'Popular in Northgate',f:()=>{mood('R',4);mood('C',1);mood('L',-6);rel('faith',-10);return 'Crews clear the park in a morning. People move two blocks east.'}},
+    {t:'Fund a housing-first shelter',h:'Costs money, actually helps',f:()=>{cash(-18);qual('housing',6);mood('L',4);mood('R',-2);rel('faith',8);return 'A former motel becomes 90 units of supportive housing.'}},
+    {t:'Leave it alone',h:'Free, and unpopular',f:()=>{mood('C',-3);qual('parks',-4);return 'The tents stay. So do the complaints.'}}]},
+{id:'pothole',repeat:6,cond:()=>S.svc.roads<55,kicker:'Public Works',title:'Pothole tracker app goes viral',body:()=>`A resident built a map of every pothole in ${S.city}. It has 41,000 pins and a leaderboard.`,
+  choices:[{t:'Announce a pothole blitz',h:'Costs money; voters see it',f:()=>{cash(-12);qual('roads',6);mood('C',3);return 'Asphalt trucks roll out at dawn. The map starts shrinking.'}},
+    {t:'Blame the winter',h:'Free, unconvincing',f:()=>{mood('C',-2);return 'The app adds a “Blame the winter” badge.'}}]},
+{id:'fedgrant',kicker:'Infrastructure',title:'Federal transit grant opens',body:()=>`Washington is handing out transit money, but cities must put up a 20% match and apply within a month.`,
+  choices:[{t:'Apply with a local match',h:'Upfront cost, real improvement',f:()=>{cash(-18);if(chance(.7)){qual('roads',8);S.qBonus.roads=(S.qBonus.roads||0)+6;rel('transit',6);return 'Grant awarded. New bus lanes break ground.'}return 'The application is rejected. The match money is spent on the study.'}},
+    {t:'Pass this round',h:'No cost',f:()=>'The money goes to the next city over.'}]},
+{id:'overtime',kicker:'Press',title:'The Ledger requests overtime records',body:()=>`A reporter has filed a public-records request for every city overtime payment above $50,000.`,
+  choices:[{t:'Release everything',h:'Transparency wins friends',f:()=>{integ(5);rel('ledger',10);rel('police',-6);mood('C',1);return 'The story runs. One captain made $310,000. You look like the reformer.'}},
+    {t:'Slow-walk the request',h:'Avoids a bad story, for now',f:()=>{expo(15);rel('ledger',-15);return 'Legal finds reasons to delay. The reporter notices.'}}]},
+{id:'bikelane',kicker:'Streets',title:'The Elm Street bike lane fight',body:()=>`A protected bike lane would remove 140 parking spaces. The public hearing ran until midnight.`,
+  choices:[{t:'Build it',h:'Greens love it; homeowners do not',f:()=>{cash(-6);qual('parks',3);rel('green',12);rel('neighbors',-12);mood('L',3);mood('R',-2);return 'Paint goes down in a week. Ridership doubles by fall.'}},
+    {t:'Shelve it',h:'Keeps the peace with drivers',f:()=>{rel('green',-12);rel('neighbors',8);mood('L',-2);mood('R',1);return 'The plan goes back for “more study.”'}}]},
+{id:'flood',repeat:8,kicker:'Emergency',title:'Flood warning for the river wards',body:()=>`The weather service gives a 50% chance the river tops its banks this weekend.`,
+  choices:[{t:'Sandbag and evacuate early',h:'Certain cost, no surprises',f:()=>{cash(-10);mood('C',1);return 'The river crests a foot below the sandbags. Better safe.'}},
+    {t:'Wait and watch',h:'Could be free. Could be a disaster.',f:()=>{if(chance(.5)){cash(-40);qual('roads',-6);mood('all',-5);return 'Water fills three neighborhoods. Cleanup will take months.'}return 'The rain shifts north. Nothing happens.'}}]},
+{id:'inlaw',kicker:'Private',title:'Your brother-in-law wants a contract',body:()=>`Your partner’s brother runs a paving company and wants a shot at the $14 million resurfacing contract. Family dinner is Sunday.`,
+  choices:[{t:'Tell him no',h:'Family tension, clean hands',f:()=>{fam(-10);integ(3);return 'Sunday dinner is very quiet.'}},
+    {t:'Let him bid like anyone else',h:'Legal, looks bad if he wins',f:()=>{expo(10);return 'He wins on price. A reporter notes the last name.'}},
+    {t:'Steer it to him',h:'Happy family, real exposure',f:()=>{fam(10);expo(30);integ(-8);return 'He gets the contract. Thanksgiving will be lovely. Everything else might not be.'}}]},
+{id:'recital',kicker:'Private',title:'The recital is the same night as the vote',body:()=>`Your kid’s spring recital starts at 7. The council’s budget amendment vote starts at 6:30 and you promised to be there.`,
+  choices:[{t:'Go to the recital',h:'Family first',f:()=>{fam(15);stress(-4);rel('council',-6);return 'You sit in the third row. Your phone buzzes the whole time.'}},
+    {t:'Stay for the vote',h:'Council gratitude',f:()=>{fam(-12);rel('council',6);return 'The amendment passes. You get a photo of the recital by text.'}}]},
+{id:'posts',kicker:'Press',title:'Old posts resurface',body:()=>`Someone dug up jokes you posted in 2011. They have not aged well.`,
+  choices:[{t:'Apologize plainly',h:'Takes the hit, moves on',f:()=>{mood('all',-1);integ(2);return 'A short statement. The story dies in two days.'}},
+    {t:'Say your account was hacked',h:'Might work. Might not.',f:()=>{if(chance(.5))return 'Nobody can prove otherwise.';integ(-10);mood('all',-4);expo(10);return 'A forensic blogger proves you posted them from your own phone.'}},
+    {t:'Ignore it',h:'Lets the story run',f:()=>{mood(weakestBloc(),-3);return 'Your weakest neighborhood is not amused.'}}]},
+{id:'rating',cond:()=>S.treasury<40,kicker:'Finance',title:'Bond agencies review the city’s credit',body:()=>`With the reserve at ${money(S.treasury)}, rating agencies want to see a plan. A downgrade would raise borrowing costs for years.`,
+  choices:[{t:'Present an austerity plan',h:'Agencies like it; Eastside does not',f:()=>{mood('R',3);mood('L',-2);rel('council',4);return 'The rating holds, on a negative outlook. They will be watching your next budget.'}},
+    {t:'Promise growth will fix it',h:'A gamble',f:()=>{if(chance(.5)){S.debtAdj+=10;mood('R',-2);news('City credit rating downgraded.','bad');return 'Downgraded. Debt service rises.'}return 'The agencies give you one more year.'}}]},
+{id:'complex',fac:'neighbors',kicker:'Housing',title:'Homeowners fight an affordable complex',body:()=>`A 300-unit affordable project in Northgate has the votes, but homeowners have packed every meeting.`,
+  choices:[{t:'Approve it',h:'Housing up, homeowners furious',f:()=>{qual('housing',8);rel('neighbors',-20);rel('developers',10);mood('L',4);mood('R',-2);return 'Approved. Lawn signs go up overnight.'}},
+    {t:'Cut it in half',h:'Compromise',f:()=>{qual('housing',3);rel('neighbors',-5);return '150 units. Nobody is thrilled, which may mean it was fair.'}},
+    {t:'Kill it',h:'Homeowners cheer',f:()=>{qual('housing',-3);rel('neighbors',15);mood('L',-5);return 'The project dies. Advocates call it a betrayal.'}}]},
+{id:'sickout',fac:'transit',labor:true,cond:()=>S.budget.roads<108,kicker:'Labor',title:'Bus drivers call in sick',body:()=>`A third of drivers called out this morning. Local 310 says it is about forced overtime.`,
+  choices:[{t:'Raise driver pay',h:'Roads & Transit funding up 6%',f:()=>{bump('roads',6);rel('transit',15);mood('L',2);return 'Buses are back by Thursday.'}},
+    {t:'Hire temporary drivers',h:'Union fury, shaky service',f:()=>{rel('transit',-20);qual('roads',-6);mood('C',-2);return 'Temps get lost on routes. Riders wait an hour.'}}]},
+{id:'bid',fac:'chamber',kicker:'Economy',title:'The Chamber’s downtown plan',body:()=>`The Chamber wants a business improvement district: extra cleaning, security and marketing, paid by a downtown assessment.`,
+  choices:[{t:'Create the district',h:'Economy up, a bit corporate',f:()=>{S.econShock+=.015;rel('chamber',15);mood('L',-2);percep(4);return 'Yellow-vested ambassadors appear downtown.'}},
+    {t:'Decline',h:'Chamber annoyed',f:()=>{rel('chamber',-8);return 'The Chamber issues a sternly worded op-ed.'}}]},
+{id:'govevent',fac:'governor',cond:()=>S.rel.governor>0,kicker:'State',title:'The Governor wants you on stage',body:()=>`The Governor is touring the state and wants you at a rally downtown. State grant money tends to follow these things.`,
+  choices:[{t:'Share the stage',h:'State money; some voters object',f:()=>{cash(35);rel('governor',10);mood(S.govLean>0?'L':'R',-3);return 'A big check for the transit hub is announced on stage.'}},
+    {t:'Keep your distance',h:'Independence, no money',f:()=>{rel('governor',-8);mood('C',1);return 'You send a deputy. The Governor’s staff notice.'}}]},
+{id:'ransom',kicker:'Technology',title:'Ransomware hits City Hall',body:()=>`Payroll, permits and 911 dispatch logs are encrypted. The hackers want payment in crypto within 72 hours.`,
+  choices:[{t:'Pay the ransom',h:'Fast, embarrassing',f:()=>{cash(-12);integ(-3);return 'Systems return. The FBI is unimpressed.'}},
+    {t:'Rebuild from backups',h:'Slower and pricier, but you own it',f:()=>{cash(-24);qual('admin',4);mood('C',-1);return 'Two weeks of paper forms, then a modern system.'}}]},
+{id:'foodbank',fac:'faith',kicker:'Community',title:'Food banks are running empty',body:()=>`The Interfaith Alliance says demand is up 40% and shelves are bare before the holidays.`,
+  choices:[{t:'Match their donations',h:'Small cost, real goodwill',f:()=>{cash(-6);qual('health',3);rel('faith',12);mood('L',2);return 'Trucks roll out by Thanksgiving.'}},
+    {t:'Decline',h:'Saves money',f:()=>{rel('faith',-8);return 'Pastors mention it from the pulpit.'}}]},
+{id:'festival',repeat:6,kicker:'Community',title:'Harbor Days festival',body:()=>`Two hundred thousand people downtown, a parade, and a dunk tank with your name on it.`,
+  choices:[{t:'Headline it',h:'Tiring, likable',f:()=>{stress(4);mood('all',2);return 'You get dunked eleven times. It is the best photo of your term.'}},
+    {t:'Skip it',h:'You need the rest',f:()=>{stress(-3);return 'A deputy cuts the ribbon.'}}]},
+{id:'climate',fac:'green',kicker:'Environment',title:'Youth climate march on City Hall',body:()=>`Ten thousand students want a carbon-neutral pledge by 2040.`,
+  choices:[{t:'Sign the pledge',h:'Greens thrilled; business wary',f:()=>{rel('green',15);rel('chamber',-6);mood('L',4);mood('R',-2);qual('parks',3);return 'You sign it on the steps. The kids chant your name.'}},
+    {t:'Meet with organizers privately',h:'Some goodwill',f:()=>{rel('green',4);return 'A productive hour. No pledge.'}}]},
+{id:'auditor',cond:()=>!S.audited,kicker:'Finance',title:'The comptroller has concerns',body:()=>`The comptroller says several line items in City Hall Operations “may not be doing anything.” An audit would tell you which.`,
+  choices:[{t:'Order the audit now',h:'Small cost; reveals waste',f:()=>{cash(-4);S.audited=true;integ(3);return 'The audit lands on your desk. Check the Budget tab for low-value programs.'}},
+    {t:'Not now',h:'',f:()=>'The comptroller sighs.'}]},
+{id:'reporter',cond:()=>S.exposure>=25,kicker:'Press',title:'A reporter is asking about your donors',body:()=>`A Ledger reporter has called three of your donors this week.`,
+  choices:[{t:'Sit down for an interview',h:'Get ahead of it',f:()=>{expo(-15);integ(2);rel('ledger',4);return 'You answer every question. The piece is tough but fair.'}},
+    {t:'No comment',h:'Exposure stays',f:()=>{rel('ledger',-6);return 'The reporter keeps calling.'}}]}
+];
+
+/* ============ opponent & election ============ */
+function makeOpp(){
+  if(S.opp)return;
+  const w=weakestBloc();
+  const pitch={L:'A council member running to your left, promising rent control and free buses.',R:'A business owner running on lower taxes and more police.',C:'A popular former school principal running as the “competent, boring” option.'}[w];
+  const hostile=Object.keys(S.rel).filter(f=>S.rel[f]<=-40).length;
+  S.opp={name:pick(OPP_NAMES),side:w,pitch,chest:220+Math.max(0,55-approval())*5+hostile*30+rnd(0,60)};
+}
+function electionFactors(noise=0){
+  const a=approval();const f=[];
+  f.push(['Your approval ('+a.toFixed(0)+'%)',(a-50)*.8]);
+  f.push(['Money raised vs. '+S.opp.name,clamp((S.raised-S.opp.chest)/60,-4,4)]);
+  f.push(['Ground game',Math.min(5,S.reach*.3)]);
+  let e=0;const ends=[],hostile=[];
+  for(const k in S.rel){if(S.rel[k]>=40||(S.pledged[k]&&S.rel[k]>=10)){e+=k==='ledger'?2:1.5;ends.push(FACTIONS[k].name)}else if(S.rel[k]<=-40){e-=1;hostile.push(FACTIONS[k].name)}}
+  const cms=S.council.filter(m=>m.rel>=40||(m.endorse&&m.rel>=10));
+  if(cms.length){e+=Math.min(2.5,cms.length*.35)+(cms.length>S.council.length/2?.5:0);ends.push(cms.length===1?'Council member '+cms[0].name:cms.length+' council members')}
+  f.push(['Endorsements ('+ends.length+' for, '+hostile.length+' against)',e]);
+  let p=0;S.promises.forEach(id=>p+=PROMISES[id].check()?2:-3.5);
+  f.push(['Promises kept',p]);
+  f.push(['Debate',clamp(S.debate,-3,4)]);
+  f.push(['Incumbency',1]);
+  if(S.scandal)f.push(['Active scandal',-3]);
+  if(noise)f.push(['Election-night swing',noise]);
+  return {f,ends,hostile,share:clamp(50+f.reduce((s,x)=>s+x[1],0),18,82)};
+}
+
+/* ============ actions ============ */
+const ACTIONS={
+  townhall:{cost:1,run:b=>{stress(6);mood(b,3);if(chance(.15)){mood(b,-2);return `A heckler at the ${BLOCS[b].area} town hall goes viral, but most people leave happy.`}return `Three hours of questions in ${BLOCS[b].area}. People feel heard.`}},
+  presser:{cost:1,run:()=>{stress(3);if(S.stress>60&&chance(.2)){mood('all',-2);return 'You are short-tempered with a reporter. The clip runs all week.'}mood('all',S.integrity>=50?2:1);return 'A crisp press conference. The evening news leads with your talking points.'}},
+  audit:{cost:1,run:()=>{cash(-6);S.audited=true;integ(4);return 'The auditors flag several programs as low value. Look for the tags in the Budget tab.'}},
+  grant:{cost:1,run:()=>{S.grantYear=year(S.q);const p=.4+(has('governor')?S.rel.governor/200:0);if(chance(p)){cash(35);return 'The state approves a one-time infrastructure grant.'}return 'The application is denied. The Governor’s office says to try next year.'}},
+  ribbon:{cost:1,run:()=>{cash(-10);mood('C',3);mood(strongestBloc(),2);stress(2);return 'A new playground, a giant pair of scissors, a lot of photos.'}},
+  family:{cost:1,run:()=>{fam(14);stress(-6);return 'Phones in a basket. Tacos. Board games.'}},
+  gym:{cost:1,run:()=>{stress(-14);return 'Eight hours of sleep, a run along the harbor, a real lunch.'}},
+  weekend:{cost:2,run:()=>{stress(-28);fam(12);mood('all',-1);return 'Three days at the lake. A columnist asks who is running the city.'}},
+  counselor:{cost:1,run:()=>{stress(-10);fam(4);return 'An hour a week with someone who is not asking you for anything.'}},
+  grassroots:{cost:1,run:()=>{raise(25);percep(-8);stress(6);mood('L',2);return 'Thousands of $20 donations come in overnight.'}},
+  luncheon:{cost:1,run:()=>{raise(45);percep(8);rel('chamber',5);mood('L',-1);return 'Two hundred executives, rubber chicken, and a full donor list.'}},
+  devdinner:{cost:1,run:()=>{raise(70);percep(12);integ(-4);expo(12);rel('developers',6);return 'A private dinner in a penthouse that does not have a permit yet.'}},
+  union:{cost:1,run:()=>{raise(35);percep(-4);['police','teachers','transit'].forEach(f=>rel(f,4));mood('R',-1);return 'You speak at the labor hall. They pass a hat, then pass it again.'}},
+  gala:{cost:1,run:()=>{raise(55);stress(10);fam(-6);percep(5);return 'A black-tie gala with a pop star. You get home at 2 a.m.'}},
+  pac:{cost:1,run:()=>{raise(110);integ(-8);expo(20);percep(15);return 'A super PAC with an anodyne name starts running ads for you. You definitely did not coordinate.'}},
+  ads:{cost:1,run:()=>{S.chest-=40;mood('all',3);S.reach+=2;return 'Your ad runs during the evening news, every night, for two weeks.'}},
+  doors:{cost:1,run:()=>{stress(10);S.reach+=4;mood('C',2);return 'You knock on 600 doors in Midtown. Your feet hurt.'}},
+  rally:{cost:1,run:()=>{const b=strongestBloc();mood(b,4);S.reach+=2;stress(5);return `A packed rally in ${BLOCS[b].area}. The base is fired up.`}},
+  prep:{cost:1,run:()=>{S.prep++;stress(4);return 'Mock debate with your staff. They play your opponent a little too well.'}},
+  attack:{cost:1,run:()=>{S.chest-=30;S.reach+=3;integ(-3);mood('C',-1);return `An ad about ${S.opp.name}’s tax returns. Effective, and nobody likes it.`}}
+};
+function doAction(id,arg){
+  const A=ACTIONS[id];if(S.slots<A.cost){toast('No agenda slots left this quarter. Close the quarter to continue.');return}
+  const before=snap();S.slots-=A.cost;const out=A.run(arg);save();render();
+  showOutcome('Agenda',A.title||'Done',out,before);
+}
+
+/* ============ diff chips ============ */
+function snap(){return JSON.parse(JSON.stringify({treasury:S.treasury,chest:S.chest,integrity:S.integrity,stress:S.stress,family:S.family,econ:S.econ,perception:S.perception,reach:S.reach,exposure:S.exposure,mood:{L:S.blocs.L.mood,C:S.blocs.C.mood,R:S.blocs.R.mood},rel:S.rel,q:S.svc,budget:S.budget,revAdj:S.revAdj,spendAdj:S.spendAdj,econShock:S.econShock,slots:S.slots,cm:S.council.map(m=>m.rel)}))}
+function diffChips(a){
+  const out=[];const c=(label,d,up=true)=>out.push(`<span class="delta ${(d>0)===up?'up':'down'}">${esc(label)}</span>`);
+  const d=(k)=>S[k]-a[k];
+  if(Math.abs(d('treasury'))>=.5)c('City reserve '+(d('treasury')>0?'+':'−')+money(Math.abs(d('treasury'))),d('treasury'));
+  if(Math.abs(d('chest'))>=.5)c('War chest '+(d('chest')>0?'+':'−')+cmoney(Math.abs(d('chest'))),d('chest'));
+  ['L','C','R'].forEach(b=>{const x=S.blocs[b].mood-a.mood[b];if(Math.abs(x)>=.5)c(`${BLOCS[b].name} voters ${sgn(x)}`,x)});
+  for(const f in S.rel){const x=S.rel[f]-a.rel[f];if(Math.abs(x)>=.5)c(`${FACTIONS[f].name} ${sgn(x)}`,x)}
+  const cd=S.council.map((m,i)=>m.rel-a.cm[i]);
+  if(cd.every(x=>Math.abs(x-cd[0])<.01)&&Math.abs(cd[0])>=.5)c(`City Council (all members) ${sgn(cd[0])}`,cd[0]);
+  else S.council.forEach((m,i)=>{if(Math.abs(cd[i])>=.5)c(`${m.name} (D${m.n}) ${sgn(cd[i])}`,cd[i])});
+  for(const k in S.svc){const x=S.svc[k]-a.q[k];if(Math.abs(x)>=.5)c(`${DN[k]} ${sgn(x)}`,x)}
+  for(const k in S.budget){const x=S.budget[k]-a.budget[k];if(x)c(`${DN[k]} funding ${sgn(x)}%`,x)}
+  if(Math.abs(d('integrity'))>=.5)c('Integrity '+sgn(d('integrity')),d('integrity'));
+  if(Math.abs(d('exposure'))>=.5)c('Scandal exposure '+sgn(d('exposure')),d('exposure'),false);
+  if(Math.abs(d('stress'))>=.5)c('Stress '+sgn(d('stress')),d('stress'),false);
+  if(Math.abs(d('family'))>=.5)c('Family '+sgn(d('family')),d('family'));
+  if(Math.abs(d('reach'))>=.5)c('Ground game '+sgn(d('reach')),d('reach'));
+  const ec=(S.econShock-a.econShock)+(S.econ-a.econ);if(Math.abs(ec)>=.001)c('Economy '+sgn(ec*100,1)+'%',ec);
+  if(d('revAdj'))c('Annual revenue '+(d('revAdj')>0?'+':'−')+money(Math.abs(d('revAdj'))),d('revAdj'));
+  if(d('spendAdj'))c('Annual costs +'+money(d('spendAdj')),-1);
+  if(Math.abs(d('perception'))>=.5)out.push(`<span class="delta">Image: more ${d('perception')>0?'establishment':'grassroots'}</span>`);
+  if(S.slots<a.slots)out.push(`<span class="delta down">Agenda slots −${a.slots-S.slots}</span>`);
+  return out.join('');
+}
+
+/* ============ modal plumbing ============ */
+function openModal(html){$('#modal').innerHTML=html;$('#modalWrap').hidden=false;const f=$('#modal button');if(f)f.focus({preventScroll:true});$('#modalWrap').scrollTop=0}
+function closeModal(){$('#modalWrap').hidden=true;$('#modal').innerHTML='';CUR=null}
+function memoHead(kicker){return `<div class="memo-head"><span>Memo · ${esc(kicker)}</span><span>To Mayor ${esc(S.mayor)} · ${when(Math.min(S.q,16))}</span></div>`}
+function nextEvent(){
+  if(!S.queue.length){closeModal();render();return}
+  const id=S.queue[0];const e=EVENTS.find(x=>x.id===id);
+  if(!e){S.queue.shift();nextEvent();return}
+  const body=typeof e.body==='function'?e.body():e.body;
+  const ch=typeof e.choices==='function'?e.choices():e.choices;
+  CUR={e,ch,before:snap()};
+  openModal(`${memoHead(e.kicker)}<div class="memo-body"><h2 id="mtitle">${esc(e.title)}</h2><p class="lede">${esc(body)}</p>
+    <div class="choices">${ch.map((c,i)=>`<button class="choice" data-choice="${i}"><b>${esc(c.t)}</b>${c.h?`<span>${esc(c.h)}</span>`:''}</button>`).join('')}</div></div>`);
+}
+function resolveChoice(i){
+  const {e,ch,before}=CUR;const out=ch[i].f()||'';
+  S.queue.shift();if(!e.special&&!e.repeat)S.used.push(e.id);S.seen[e.id]=S.q;
+  if(!e.special||e.id==='scandal')news(`${e.title}: ${ch[i].t.toLowerCase()}.`);
+  save();render();
+  const more=S.queue.length;
+  openModal(`${memoHead(e.kicker)}<div class="memo-body"><h2 id="mtitle">${esc(e.title)}</h2><p class="outcome">${esc(out)}</p>
+    <div class="deltas">${diffChips(before)}</div><div class="foot"><button class="btn primary" data-next>${more?'Next memo ('+more+' left)':'Back to the desk'}</button></div></div>`);
+}
+function showOutcome(kicker,title,out,before){
+  openModal(`${memoHead(kicker)}<div class="memo-body"><p class="outcome" id="mtitle">${esc(out)}</p><div class="deltas">${diffChips(before)}</div>
+  <div class="foot"><button class="btn primary" data-close>Back to the desk</button></div></div>`);
+}
+
+/* ============ negotiation ============ */
+const ASKS={
+  endorse:{t:'Endorse my re-election',h:'They back you on Election Day if relations stay warm',d:.3},
+  peace:{t:'Keep disputes private for a year',h:'No strikes or public fights from them for four quarters',d:.1},
+  donate:{t:'Donate to my campaign',h:'Money for the war chest',d:.15},
+  support:{t:'Help deliver results',h:'They put their weight behind your work',d:.15},
+  goodwill:{t:'Nothing today, just talk',h:'An easy meeting that builds trust',d:-.15}
+};
+function supportLabel(f){const F=FACTIONS[f];return F.support||`Help deliver on ${DN[F.dept]}`}
+function negoAsks(f){const F=FACTIONS[f];return Object.keys(ASKS).filter(a=>!(a==='endorse'&&S.pledged[f])&&!(a==='donate'&&!F.donor)&&!(a==='peace'&&peace(f)))}
+function negoOffers(f){const F=FACTIONS[f];const o=[];
+  if(F.dept)o.push({id:'commit',t:`Fund ${DN[F.dept]} at 110%+ in the next budget`,h:'A promise they will hold you to',v:.3});
+  o.push({id:'appear',t:'A joint public appearance',h:'Shifts how voters see you',v:.12});
+  o.push({id:'concede',t:F.concession,h:'A real policy concession',v:.25});
+  o.push({id:'none',t:'Appeal to shared goals',h:'Costs nothing',v:0});return o}
+function negoOdds(){const o=negoOffers(NEGO.f).find(x=>x.id===NEGO.offer);return clamp(.35+S.rel[NEGO.f]/160+(o?o.v:0)-ASKS[NEGO.ask].d,.05,.95)}
+function openNego(f){NEGO={f,ask:negoAsks(f)[0],offer:'none'};renderNego()}
+function renderNego(){
+  const f=NEGO.f,F=FACTIONS[f];const [rl]=relLabel(S.rel[f]);const p=negoOdds();
+  openModal(`<div class="memo-head"><span>Negotiation · ${esc(F.name)}</span><span>Relations: ${rl} (${Math.round(S.rel[f])})</span></div>
+  <div class="memo-body"><h2 id="mtitle">Sit down with ${esc(F.name)}</h2><p class="muted">${esc(F.blurb)}</p>
+  <div class="nego-grid"><div class="section"><div class="eyebrow">What you ask for</div><div class="choices">
+  ${negoAsks(f).map(a=>`<button class="choice ${NEGO.ask===a?'sel':''}" data-ask="${a}" aria-pressed="${NEGO.ask===a}"><b>${esc(a==='support'?supportLabel(f):ASKS[a].t)}</b><span>${esc(ASKS[a].h)}</span></button>`).join('')}</div></div>
+  <div class="section"><div class="eyebrow">What you offer</div><div class="choices">
+  ${negoOffers(f).map(o=>`<button class="choice ${NEGO.offer===o.id?'sel':''}" data-offer="${o.id}" aria-pressed="${NEGO.offer===o.id}"><b>${esc(o.t)}</b><span>${esc(o.h)}</span></button>`).join('')}</div></div></div>
+  <div class="odds"><span class="num">${Math.round(p*100)}%</span><span class="muted">chance they say yes. Uses 1 agenda slot. A refusal cools relations a little.</span></div>
+  <div class="foot"><button class="btn" data-close>Walk away</button><button class="btn primary" data-pitch ${S.slots<1?'disabled':''}>Make the pitch</button></div></div>`);
+}
+function pitch(){
+  const f=NEGO.f,F=FACTIONS[f];const before=snap();S.slots--;stress(3);
+  const o=negoOffers(f).find(x=>x.id===NEGO.offer);let out;
+  if(chance(negoOdds())){
+    rel(f,6+o.v*20);
+    if(o.id==='commit'){const due=S.budgetSession&&!S.budgetSubmitted?S.q:Math.min(16,S.q+(4-(S.q-1)%4));S.commitments.push({f,dept:F.dept,min:110,due})}
+    if(o.id==='appear'){if(F.lean<-.2){mood('L',2);mood('R',-1)}else if(F.lean>.2){mood('R',2);mood('L',-1)}else mood('C',1);percep(F.corp?4:F.labor?-3:0)}
+    if(o.id==='concede')concede(f);
+    const a=NEGO.ask;
+    if(a==='endorse')S.pledged[f]=true;
+    if(a==='peace')S.peace[f]=S.q+3;
+    if(a==='donate'){raise(F.donor*(1+S.rel[f]/200));if(F.corp)percep(6);if(F.labor)percep(-3)}
+    if(a==='support'){if(F.dept){qual(F.dept,5);S.qBonus[F.dept]=(S.qBonus[F.dept]||0)+4}else if(f==='governor')cash(35);else{integ(3);mood('C',2)}}
+    out=`Handshakes all around. ${F.name} agree${a==='endorse'?' to endorse you':a==='peace'?' to keep things private for a year':a==='donate'?' to write a check':a==='support'?' to help':' to keep talking'}.`;
+    if(o.id==='commit')out+=` They expect ${DN[F.dept]} at 110% or more in the next budget.`;
+  }else{rel(f,-2);out=`${F.name} listen politely, then say no.`}
+  save();render();showOutcome('Negotiation',F.name,out,before);
+}
+function concede(f){
+  ({police:()=>{bump('safety',5);mood('L',-1)},teachers:()=>bump('schools',5),
+    chamber:()=>{S.tax.fees=clamp(+(S.tax.fees-.1).toFixed(2),.7,1.3);S.pend.tax.fees=S.tax.fees},
+    developers:()=>{qual('housing',3);expo(8);rel('neighbors',-8)},green:()=>{S.econShock-=.005;percep(-4);mood('R',-2);mood('L',2)},
+    transit:()=>{bump('roads',3);S.flags.noRouteCuts=true},neighbors:()=>{qual('housing',-4);rel('developers',-10)},
+    tech:()=>{S.econShock+=.005;mood('L',-1)},faith:()=>{qual('housing',2);cash(-5)},ledger:()=>{integ(2);rel('council',-4)},
+    governor:()=>{percep(4);mood(S.govLean>0?'L':'R',-3)},sports:()=>{cash(-5);S.flags.stadiumStudy=true}}[f]||(()=>{}))();
+}
+
+/* ============ budget ============ */
+function councilVote(){
+  const members=S.council.map(m=>{const s=memberScore(m);return {m,s,yes:s>.5}});
+  const yes=members.filter(x=>x.yes).length,seats=S.council.length;
+  return {yes,no:seats-yes,seats,pass:yes>seats/2,members};
+}
+function pendChanged(){const p=S.pend;return DEPTS.some(d=>p.budget[d.id]!==S.budget[d.id])||['prop','sales','fees'].some(k=>Math.abs(p.tax[k]-S.tax[k])>1e-9)||PROGRAMS.some(x=>p.programs[x.id]!==S.programs[x.id])||S.council.some(m=>!!p.pets[m.id]!==!!S.pets[m.id])}
+
+/* ============ council member meetings ============ */
+const CM_ASKS={
+  vote:{t:'Vote yes on my next budget',h:'A firm vote, as long as you keep your side of the deal',d:.05},
+  endorse:{t:'Endorse my re-election',h:'Counts on Election Day if relations stay warm',d:.3},
+  back:{t:'Talk up my agenda in the district',h:'Their voters warm to you',d:.15},
+  talk:{t:'Nothing today, just talk',h:'Builds trust',d:-.15}
+};
+function cmAsks(m){return Object.keys(CM_ASKS).filter(a=>!(a==='vote'&&m.voteP)&&!(a==='endorse'&&m.endorse))}
+function cmOffers(m){const o=[];
+  if(!S.pets[m.id]&&!S.commitments.some(c=>c.m===m.id))o.push({id:'pet',t:`Fund the ${m.pet.name}`,h:`${money(m.pet.cost)}/yr, added to your pending budget. They will hold you to it.`,v:.35});
+  o.push({id:'townhall',t:`A joint town hall in ${m.district}`,h:'Good for both of you with district voters',v:.12});
+  o.push({id:'board',t:'Appoint their ally to the Planning Board',h:m.trait==='principled'?'This one finds patronage insulting':'Patronage. Reporters notice.',v:m.trait==='principled'?-.3:.2});
+  o.push({id:'cosponsor',t:'Co-sponsor their ordinance',h:'Members from other blocs will grumble',v:.15});
+  o.push({id:'none',t:'Appeal to the good of the city',h:'Costs nothing',v:0});return o}
+function cmOdds(){const m=cm(NEGO.m);const o=cmOffers(m).find(x=>x.id===NEGO.offer)||{v:0};
+  return clamp(.35+m.rel/160+o.v-CM_ASKS[NEGO.ask].d-(NEGO.ask==='endorse'&&m.trait==='ambitious'?.2:0)+(m.trait==='dealmaker'?.1:0),.05,.95)}
+function openCmNego(id){const m=cm(id);NEGO={m:id,ask:cmAsks(m)[0],offer:cmOffers(m)[0].id};renderCmNego()}
+function renderCmNego(){
+  const m=cm(NEGO.m);const [rl]=relLabel(m.rel);const p=cmOdds();const [,sl,sc]=stance(memberScore(m));
+  openModal(`<div class="memo-head"><span>Council office · District ${m.n}</span><span>Relations: ${rl} (${Math.round(m.rel)})</span></div>
+  <div class="memo-body"><h2 id="mtitle">Meet ${esc(m.name)}</h2>
+  <p class="muted">${BLOCS[m.bloc].name} member for ${esc(m.district)}. ${m.trait?esc(TRAITS[m.trait].name+': '+TRAITS[m.trait].h):''} Wants the <b>${esc(m.pet.name)}</b>${S.pets[m.id]?' (funded)':''}. On your pending budget: <span class="pill ${sc}">${sl}</span></p>
+  <div class="nego-grid"><div class="section"><div class="eyebrow">What you ask for</div><div class="choices">
+  ${cmAsks(m).map(a=>`<button class="choice ${NEGO.ask===a?'sel':''}" data-cmask="${a}" aria-pressed="${NEGO.ask===a}"><b>${esc(CM_ASKS[a].t)}</b><span>${esc(CM_ASKS[a].h)}</span></button>`).join('')}</div></div>
+  <div class="section"><div class="eyebrow">What you offer</div><div class="choices">
+  ${cmOffers(m).map(o=>`<button class="choice ${NEGO.offer===o.id?'sel':''}" data-cmoffer="${o.id}" aria-pressed="${NEGO.offer===o.id}"><b>${esc(o.t)}</b><span>${esc(o.h)}</span></button>`).join('')}</div></div></div>
+  <div class="odds"><span class="num">${Math.round(p*100)}%</span><span class="muted">chance of a deal. Uses 1 agenda slot.</span></div>
+  <div class="foot"><button class="btn" data-close>Walk away</button><button class="btn primary" data-cmpitch ${S.slots<1?'disabled':''}>Make the deal</button></div></div>`);
+}
+function cmPitch(){
+  const m=cm(NEGO.m);const before=snap();S.slots--;stress(3);
+  const o=cmOffers(m).find(x=>x.id===NEGO.offer);let out;
+  if(chance(cmOdds())){
+    crel(m,6+Math.max(0,o.v)*20);
+    if(o.id==='pet'){S.pend.pets[m.id]=true;const due=S.budgetSession&&!S.budgetSubmitted?S.q:Math.min(16,S.q+(4-(S.q-1)%4));S.commitments.push({m:m.id,due})}
+    if(o.id==='townhall'){mood(m.bloc,2);stress(3)}
+    if(o.id==='board'){integ(-2);expo(5)}
+    if(o.id==='cosponsor')S.council.forEach(x=>{if(x.bloc!==m.bloc)crel(x,-3)});
+    const a=NEGO.ask;
+    if(a==='vote')m.voteP=true;
+    if(a==='endorse')m.endorse=true;
+    if(a==='back')mood(m.bloc,2);
+    out=`${m.name} shakes on it${a==='vote'?' and will vote for your next budget':a==='endorse'?' and will endorse you':a==='back'?' and will talk you up in '+m.district:''}.`;
+    if(o.id==='pet')out+=` The ${m.pet.name} is now in your pending budget. Pass it ${S.budgetSession&&!S.budgetSubmitted?'this quarter':S.q>=13?'with a budget amendment before Election Day':'by the end of the next budget session'} or pay for breaking your word.`;
+  }else{crel(m,-2);out=`${m.name} hears you out and says no.`}
+  save();render();showOutcome('Council office',m.name,out,before);
+}
+function submitBudget(){
+  if(!pendChanged()){toast('Nothing has changed yet.');return}
+  const cost=S.budgetSession&&!S.budgetSubmitted?0:1;
+  if(S.slots<cost){toast('Mid-year amendments need a free agenda slot.');return}
+  if(S.flags.noRouteCuts&&S.programs.nightbus&&!S.pend.programs.nightbus){toast('You promised Local 310 no route cuts. The night bus stays.');return}
+  S.slots-=cost;const before=snap();
+  const v=councilVote();const seats=v.seats;
+  const roll=v.members.map(x=>({m:x.m,yes:x.m.voteP||x.s+rnd(-.08,.08)>.5}));
+  const yes=roll.filter(x=>x.yes).length;const pass=yes>seats/2;
+  S.council.forEach(m=>m.voteP=false);
+  let out;
+  if(pass){
+    const p=S.pend;
+    DEPTS.forEach(d=>{const x=p.budget[d.id]-S.budget[d.id];if(!x)return;for(const f in S.rel)if(FACTIONS[f].dept===d.id)rel(f,clamp(x*.5,-15,15))});
+    const hike=Math.max(0,p.tax.prop-S.tax.prop)/.1+Math.max(0,p.tax.sales-S.tax.sales)/.25+Math.max(0,p.tax.fees-S.tax.fees)/.1;
+    const cutT=Math.max(0,S.tax.prop-p.tax.prop)/.1+Math.max(0,S.tax.sales-p.tax.sales)/.25+Math.max(0,S.tax.fees-p.tax.fees)/.1;
+    for(const f in S.rel)if(FACTIONS[f].taxLow)rel(f,(cutT-hike)*3);
+    if(p.tax.prop>S.startTax.prop+1e-9||p.tax.sales>S.startTax.sales+1e-9){if(!S.raisedTax&&S.promises.includes('notax'))news('“No new taxes” pledge broken.','bad');S.raisedTax=true}
+    PROGRAMS.forEach(pr=>{const was=S.programs[pr.id],now=p.programs[pr.id];
+      if(was&&!now){if(pr.fan)rel(pr.fan,-10);if(pr.hater)rel(pr.hater,6);if(pr.fanBloc)mood(pr.fanBloc,pr.low?-1:-3);if(pr.low){S.cutsLow++;if(S.audited)integ(2)}}
+      if(!was&&now){if(pr.fan)rel(pr.fan,6);if(pr.low)S.cutsLow=Math.max(0,S.cutsLow-1)}
+      if(was&&!now&&pr.councilFan)rel('council',-2)});
+    S.council.forEach(m=>{const was=!!S.pets[m.id],now=!!p.pets[m.id];
+      if(!was&&now){crel(m,20);mood(m.bloc,1)}
+      if(was&&!now){crel(m,-25);mood(m.bloc,-1)}});
+    S.budget={...p.budget};S.tax={...p.tax};S.programs={...p.programs};S.pets={...p.pets};
+    if(S.budgetSession)S.budgetSubmitted=true;
+    roll.forEach(x=>crel(x.m,x.yes?2:-1));
+    news(`Council adopts ${S.budgetSession&&cost===0?'the FY'+year(S.q)+' budget':'a budget amendment'}, ${yes}–${seats-yes}.`,'good');
+    out=`The council votes ${yes}–${seats-yes} to adopt it. New funding levels take effect immediately.`;
+  }else{roll.forEach(x=>{if(!x.yes)crel(x.m,-2)});news(`Council rejects the mayor’s budget, ${yes}–${seats-yes}.`,'bad');
+    out=`The council votes it down ${yes}–${seats-yes}. Meet the undecided members, fund a district project or two, or make smaller changes. ${S.budgetSession&&!S.budgetSubmitted?'You can revise and resubmit this quarter at no cost.':''}`}
+  save();render();
+  openModal(`${memoHead('Council chamber')}<div class="memo-body"><h2 id="mtitle">${pass?'Budget adopted':'Budget rejected'}</h2>
+    <p class="outcome">${esc(out)}</p>${rollCall(roll.map(x=>({m:x.m,label:x.yes?'Yes':'No',cls:x.yes?'good':'bad'})))}<div class="deltas">${diffChips(before)}</div>
+    <div class="foot"><button class="btn primary" data-close>Back to the desk</button></div></div>`);
+}
+
+/* ============ reports & endings ============ */
+function showReport(r){
+  const row=(k,v,cls='')=>`<span class="${cls}">${k}</span><span class="v ${cls}">${v}</span>`;
+  const blocs=['L','C','R'].map(b=>{const d=r.after.blocs[b]-r.before.blocs[b];return row(`${BLOCS[b].name} voters`,`${r.after.blocs[b].toFixed(0)}% <span class="${d>=0?'':'muted'}">(${sgn(d)})</span>`)}).join('');
+  const depts=DEPTS.map(d=>{const x=r.after.q[d.id]-r.before.q[d.id];return Math.abs(x)>=1?`<span class="delta ${x>0?'up':'down'}">${d.name} ${sgn(x)}</span>`:''}).join('');
+  openModal(`<div class="memo-head"><span>Quarterly report · ${when(r.q)}</span><span>Office of Finance</span></div><div class="memo-body">
+   <h2 id="mtitle">${r.net>=0?'In the black':'In the red'} this quarter</h2>
+   <div class="ledger">${row('Revenue',money(r.rev.total/4))}${row('Spending',money(-r.sp.total/4))}${row('Net',money(r.net),'tot')}${row('City reserve',money(r.after.treasury))}${row('Economy index',r.after.econ.toFixed(3))}</div>
+   <div class="ledger">${row('Overall approval',r.after.appr.toFixed(0)+'% ('+sgn(r.after.appr-r.before.appr)+')','tot')}${blocs}</div>
+   ${depts?`<div class="section"><div class="eyebrow">Service ratings</div><div class="deltas">${depts}</div></div>`:''}
+   <div class="foot"><button class="btn primary" data-afterreport>${S.over?'Continue':S.q>16?'Go to Election Night':'Begin '+when(S.q)}</button></div></div>`);
+}
+function showEnding(kind){
+  const T={bankrupt:['State takeover','The reserve fell so far into debt that the state appointed an emergency manager. You keep the title and lose the power.'],
+    recall:['Recalled','Two straight quarters below 25% approval gave your opponents the signatures they needed. The recall passed easily.'],
+    resign:['Resigned in disgrace','With your integrity in tatters, the council voted no confidence. You resigned before the vote was final.']}[kind];
+  clearSave();
+  openModal(`<div class="memo-head"><span>Final edition</span><span>${when(Math.min(S.q,16))}</span></div><div class="memo-body"><div class="result-big" id="mtitle">${T[0]}</div><p class="lede">${T[1]}</p>
+  <div class="foot"><button class="btn primary" data-restart>Run for mayor again</button></div></div>`);
+}
+function showElection(){
+  if(!S.opp)makeOpp();
+  const r=electionFactors(+rnd(-1.5,1.5).toFixed(1));const win=r.share>50;
+  clearSave();
+  const kept=S.promises.filter(p=>PROMISES[p].check()).length;
+  openModal(`<div class="memo-head"><span>Election night · ${esc(S.city)}</span><span>100% of precincts reporting</span></div><div class="memo-body">
+  <div class="result-big" id="mtitle" style="color:${win?'var(--good)':'var(--bad)'}">${win?'Re-elected':'Defeated'}</div>
+  <p class="lede">${esc(S.mayor)} ${r.share.toFixed(1)}% · ${esc(S.opp.name)} ${(100-r.share).toFixed(1)}%. ${win?'Four more years. The binder for the second term is even thicker.':'You call '+esc(S.opp.name)+' to concede a little after 11 p.m.'} You kept ${kept} of ${S.promises.length} promises.</p>
+  <div class="ledger">${r.f.map(x=>`<span>${esc(x[0])}</span><span class="v" style="color:${x[1]>=0?'var(--good)':'var(--bad)'}">${sgn(x[1],1)} pts</span>`).join('')}<span class="tot">Starting from 50%</span><span class="v tot">${r.share.toFixed(1)}%</span></div>
+  ${r.ends.length?`<p class="muted">Endorsed by: ${esc(r.ends.join(', '))}.</p>`:''}
+  <div class="foot"><button class="btn primary" data-restart>Start a new term</button></div></div>`);
+}
+
+/* ============ rendering ============ */
+function render(){
+  const app=$('#app');
+  if(!S){app.innerHTML=renderSetup();return}
+  const a=approval();
+  const tabs=[['hall','City Hall'],['budget','Budget'],['players','Players'],['home','Home Life'],['campaign','Campaign']];
+  const alert={budget:S.budgetSession&&!S.budgetSubmitted,home:S.stress>=70||S.family<35,campaign:S.q>=13};
+  app.innerHTML=`<header class="bar"><div class="wrap">
+    <div class="who"><div class="seal" aria-hidden="true">${esc(initials(S.city))}</div><div><h1>${esc(S.city)}</h1><div class="sub">${when(S.q)} · ${17-S.q} quarter${17-S.q===1?'':'s'} to Election Day · Mayor ${esc(S.mayor)}</div></div></div>
+    <div class="stats">
+      <div class="stat"><div class="k">City reserve</div><div class="v" style="color:${S.treasury<0?'var(--sign)':'inherit'}">${money(S.treasury)}</div></div>
+      <div class="stat"><div class="k">Approval</div><div class="v">${a.toFixed(0)}%</div></div>
+      <div class="stat"><div class="k">War chest</div><div class="v">${cmoney(S.chest)}</div></div>
+      <div class="stat"><div class="k">Agenda</div><div class="slots" aria-label="${S.slots} of 3 agenda slots left">${[0,1,2].map(i=>`<i class="${i<S.slots?'on':''}"></i>`).join('')}</div></div>
+    </div></div></header>
+  <div class="tabs-row"><div class="wrap"><nav class="tabs" role="tablist">${tabs.map(([id,l])=>`<button class="tab" role="tab" data-tab="${id}" aria-selected="${S.tab===id}">${l}${alert[id]&&S.tab!==id?'<span class="dot" aria-label="needs attention"></span>':''}</button>`).join('')}</nav></div></div>
+  <div class="wrap"><main class="layout"><section class="desk">${({hall:renderHall,budget:renderBudget,players:renderPlayers,home:renderHome,campaign:renderCampaign})[S.tab]()}</section>
+  <aside class="side">${renderSide()}</aside></main></div>`;
+}
+function initials(s){return s.split(/\s+/).filter(Boolean).map(w=>Array.from(w)[0]).slice(0,3).join('').toUpperCase()}
+function actRow(t,h,btns){return `<div class="act"><div><div class="t">${t}</div><div class="h">${h}</div></div><div class="btns">${btns}</div></div>`}
+function abtn(id,label,arg='',dis=false,cost){const c=cost??ACTIONS[id].cost;return `<button class="btn small" data-act="${id}" data-arg="${arg}" ${dis||S.slots<c?'disabled':''}>${label} · ${c} slot${c>1?'s':''}</button>`}
+function spark(){
+  const h=S.history,W=320,H=70,pad=6;const x=i=>pad+i*(W-2*pad)/16,y=v=>H-pad-(v-20)/(80-20)*(H-2*pad);
+  const pts=h.map((v,i)=>`${x(i).toFixed(1)},${y(clamp(v,20,80)).toFixed(1)}`).join(' ');
+  const last=h[h.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Approval history"><line x1="${pad}" x2="${W-pad}" y1="${y(50)}" y2="${y(50)}" stroke="var(--line)" stroke-dasharray="3 3"/>
+  <polyline points="${pts}" fill="none" stroke="var(--civic)" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${x(h.length-1)}" cy="${y(clamp(last,20,80))}" r="3.5" fill="var(--sign)" stroke="var(--civic)"/></svg>`;
+}
+function renderHall(){
+  const blocs=['L','C','R'].map(b=>{const B=S.blocs[b];const m=B.mood;return `<div class="card bloc"><div class="eyebrow" style="color:${BC[b]}">${BLOCS[b].name} · ${BLOCS[b].area}</div>
+    <div class="big">${B.appr.toFixed(0)}%</div><div class="meter"><b style="width:${B.appr}%;background:${BC[b]}"></b></div>
+    <div class="muted" style="font-size:12px">${Math.round(S.pop[b]*100)}% of voters${Math.abs(m)>=.5?` · <span class="trend" style="color:${m>0?'var(--good)':'var(--bad)'}">${sgn(m)} pending</span>`:''}</div></div>`}).join('');
+  const depts=DEPTS.map(d=>{const v=S.svc[d.id];const [l,c]=qLabel(v);const t=target(d.id);return `<div class="dept"><div class="name">${d.name}</div>
+    <div class="row"><span class="score">${v.toFixed(0)}</span><span class="lab" style="color:var(--${c||'muted'})">${l}</span></div>
+    <div class="meter"><b style="width:${v}%"></b></div><div class="row muted" style="font-size:12px"><span>Funding ${S.budget[d.id]}%</span><span>${t>v+1?'↗ rising':t<v-1?'↘ falling':'→ steady'}</span></div></div>`}).join('');
+  const r=revenue(),sp=spending();const bal=r.total-sp.total;
+  const grantDis=S.grantYear===year(S.q);
+  return `<div class="section"><div class="section-head"><h2>The electorate</h2><span class="eyebrow">Pending shifts land when the quarter closes</span></div><div class="blocs">${blocs}</div></div>
+  <div class="overview"><div class="card section"><div class="eyebrow">Overall approval, quarter by quarter</div>${spark()}<div class="kv"><span>Now</span><span class="v">${approval().toFixed(0)}%</span><span>Day one</span><span class="v">${S.history[0].toFixed(0)}%</span></div></div>
+  <div class="card kv"><span>Annual revenue</span><span class="v">${money(r.total)}</span><span>Annual spending</span><span class="v">${money(sp.total)}</span><span>Structural ${bal>=0?'surplus':'deficit'}</span><span class="v" style="color:${bal>=0?'var(--good)':'var(--bad)'}">${money(bal)}</span><span>Economy index</span><span class="v">${S.econ.toFixed(3)}</span><span>Integrity</span><span class="v">${S.integrity.toFixed(0)}</span></div></div>
+  <div class="section"><div class="section-head"><h2>City services</h2><span class="eyebrow">Ratings drift toward what you fund</span></div><div class="depts">${depts}</div></div>
+  <div class="section"><div class="section-head"><h2>Today’s agenda</h2><span class="eyebrow">${S.slots} slot${S.slots===1?'':'s'} left this quarter</span></div><div class="card acts">
+   ${actRow('Hold a town hall','Lifts one neighborhood. Raises your stress. Hecklers happen.',['L','C','R'].map(b=>abtn('townhall',BLOCS[b].area,b)).join(''))}
+   ${actRow('Call a press conference','A small lift with every voter, if you are rested and trusted.',abtn('presser','Hold it'))}
+   ${actRow('Cut a ribbon','Spend '+money(10)+' on a quick, visible project.',abtn('ribbon','Cut it'))}
+   ${actRow('Apply for a state grant',has('governor')?'Odds depend on your relationship with the Governor. Once a year.':'A long shot, once a year.',abtn('grant',grantDis?'Applied this year':'Apply','',grantDis))}
+   ${actRow('Commission a waste audit','Costs '+money(6)+'. Reveals which programs are low value.',abtn('audit',S.audited?'Done':'Order it','',S.audited))}
+  </div></div>`;
+}
+function renderBudget(){
+  const p=S.pend;const r=revenue(p.tax),sp=spending(p.budget,p.programs,p.pets);const bal=r.total-sp.total;const v=councilVote();const ch=pendChanged();
+  const free=S.budgetSession&&!S.budgetSubmitted;
+  const tax=[['prop','Property tax','of assessed value',.6,2,.05,x=>x.toFixed(2)+'%',x=>money(470*(x/1.1)*S.econ)],
+    ['sales','Local sales tax','added at the register',0,3,.25,x=>x.toFixed(2)+'%',x=>money(290*(x/1.5)*(1-.12*Math.max(0,x-1.5))*S.econ)],
+    ['fees','Business fees & licenses','of the standard schedule',.7,1.3,.05,x=>Math.round(x*100)+'%',x=>money(110*x*S.econ)]];
+  return `<div class="banner ${free?'':'calm'}"><b>${free?`FY${year(S.q)} budget session is open.`:'Mid-year.'}</b><span>${free?'Send the budget to the council this quarter at no agenda cost.':'Amendments are allowed but cost 1 agenda slot and a council vote. '+(year(S.q)<4?'The next free session opens in Y'+(year(S.q)+1)+' Q1.':'This term has no more budget sessions.')}</span></div>
+  <div class="section"><div class="section-head"><h2>Revenue</h2><span class="eyebrow">Higher rates slow the economy and annoy voters</span></div><div class="card sliders">
+  ${tax.map(([k,l,s,mn,mx,st,f,rv])=>`<div class="sl"><label for="tax-${k}">${l}<span class="sub">${s}</span></label><input type="range" id="tax-${k}" data-tax="${k}" min="${mn}" max="${mx}" step="${st}" value="${p.tax[k]}">
+   <div class="out" id="out-${k}">${f(p.tax[k])}${Math.abs(p.tax[k]-S.tax[k])>1e-9?` <span class="chg">(was ${f(S.tax[k])})</span>`:''}<small>${rv(p.tax[k])}/yr</small></div></div>`).join('')}
+  </div></div>
+  <div class="section"><div class="section-head"><h2>Departments</h2><span class="eyebrow">Percent of last year’s base budget</span></div><div class="card sliders">
+  ${DEPTS.map(d=>`<div class="sl"><label for="dep-${d.id}">${d.name}<span class="sub">Rated ${S.svc[d.id].toFixed(0)} · target ${target(d.id,p.budget,p.programs,p.pets).toFixed(0)}</span></label><input type="range" id="dep-${d.id}" data-dept="${d.id}" min="50" max="150" step="5" value="${p.budget[d.id]}">
+   <div class="out">${p.budget[d.id]}%${p.budget[d.id]!==S.budget[d.id]?` <span class="chg">(was ${S.budget[d.id]}%)</span>`:''}<small>${money(d.base*p.budget[d.id]/100)}/yr</small></div></div>`).join('')}
+  </div></div>
+  <div class="section"><div class="section-head"><h2>Line-item programs</h2><span class="eyebrow">${S.audited?'Audit results shown':'Commission an audit to find the waste'}</span></div>
+  <div class="card tablebox"><table class="progs"><thead><tr><th>Program</th><th>Dept.</th><th style="text-align:right">Per year</th><th></th></tr></thead><tbody>
+  ${PROGRAMS.map(pr=>{const on=p.programs[pr.id];const tags=[];if(S.audited)tags.push(pr.low?'<span class="pill warn">Low value</span>':'<span class="pill good">Effective</span>');if(pr.fan&&has(pr.fan))tags.push(`<span class="pill">${esc(FACTIONS[pr.fan].name)} care</span>`);
+   return `<tr class="${on?'':'cut'}"><td><div class="pname"><b>${esc(pr.name)}</b></div><div class="note">${esc(pr.note)}</div>${tags.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${tags.join('')}</div>`:''}</td><td class="note">${DN[pr.dept]}</td><td class="num">${money(pr.cost)}</td>
+   <td style="text-align:right"><button class="toggle ${on?'':'cut'}" data-prog="${pr.id}" aria-pressed="${!on}">${on?'Keep':'Cut'}</button></td></tr>`}).join('')}
+  </tbody></table></div></div>
+  <div class="section"><div class="section-head"><h2>District projects</h2><span class="eyebrow">Each council member’s pet project. Funding one buys real goodwill.</span></div>
+  <div class="card tablebox"><table class="progs"><thead><tr><th>Project</th><th>Champion</th><th style="text-align:right">Per year</th><th></th></tr></thead><tbody>
+  ${S.council.map(m=>{const on=!!p.pets[m.id];const owed=S.commitments.some(c=>c.m===m.id);
+   return `<tr class="${on?'':'cut'}"><td><div class="pname"><b>${esc(m.pet.name)}</b></div><div class="note">${DN[m.pet.dept]}${owed?' · <b style="color:var(--warn)">You promised this</b>':''}</div></td><td class="note">${esc(m.name)}<br>D${m.n} · ${esc(m.district)}</td><td class="num">${money(m.pet.cost)}</td>
+   <td style="text-align:right"><button class="toggle" data-pet="${m.id}" aria-pressed="${on}">${on?'Funded':'Fund'}</button></td></tr>`}).join('')}
+  </tbody></table></div></div>
+  <div class="section" id="budget-summary">${budgetSummary(r,sp,bal,v,ch,free)}</div>`;
+}
+function rollCall(list,meet){
+  return `<ul class="roll">${list.map(({m,label,cls})=>`<li><span class="dn">D${m.n}</span><span class="who2"><b>${esc(m.name)}</b><small>${esc(m.district)} · ${BLOCS[m.bloc].name}${m.voteP?' · pledged':''}</small></span><span class="pill ${cls}">${label}</span>${meet?`<button class="btn small" data-cmnego="${m.id}" ${S.slots<1?'disabled':''}>Meet</button>`:''}</li>`).join('')}</ul>`;
+}
+function budgetSummary(r,sp,bal,v,ch,free){
+  const list=v.members.map(x=>{const [,l,c]=stance(x.s);return {m:x.m,label:x.m.voteP?'Yes':l,cls:x.m.voteP?'good':c}});
+  return `<div class="section-head"><h2>Send to council</h2><span class="eyebrow">${v.seats} seats · ${Math.floor(v.seats/2)+1} needed</span></div>
+  <div class="overview"><div class="card ledger"><span>Revenue (taxes, fees, state aid)</span><span class="v">${money(r.total)}</span><span>Departments</span><span class="v">${money(-sp.depts)}</span><span>Programs</span><span class="v">${money(-sp.programs)}</span><span>District projects</span><span class="v">${money(-sp.districts)}</span><span>Debt service${sp.other?' & stadium bonds':''}</span><span class="v">${money(-(sp.debt+sp.other))}</span>
+  <span class="tot">Projected ${bal>=0?'surplus':'deficit'}</span><span class="v tot" style="color:${bal>=0?'var(--good)':'var(--bad)'}">${money(bal)}</span></div>
+  <div class="card section"><p style="font-size:14px">${ch?`Whip count: <b>${v.yes}–${v.no}</b>. ${v.pass?'Should pass, but undecided members can swing.':'Short of a majority. Meet the undecided members or change the budget.'}`:'Make a change to see how each member leans.'}</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-submit ${ch?'':'disabled'}>${free?'Send to council':'Send amendment · 1 slot'}</button><button class="btn" data-resetbudget ${ch?'':'disabled'}>Undo changes</button></div></div></div>
+  <div class="card section"><div class="eyebrow">${ch?'Whip count by member':'Council relations by member'}</div>${ch?rollCall(list,true):rollCall(S.council.map(m=>{const [l,c]=relLabel(m.rel);return {m,label:l,cls:c}}),true)}</div>`;
+}
+function refreshBudgetSummary(){const p=S.pend;const r=revenue(p.tax),sp=spending(p.budget,p.programs,p.pets);const el=$('#budget-summary');if(el)el.innerHTML=budgetSummary(r,sp,r.total-sp.total,councilVote(),pendChanged(),S.budgetSession&&!S.budgetSubmitted)}
+function renderCouncil(){
+  const v=councilVote();const need=Math.floor(v.seats/2)+1;
+  return `<div class="section"><div class="section-head"><h2>City Council</h2><span class="eyebrow">${v.seats} districts · ${need} votes pass a budget</span></div>
+  <div class="cmgrid">${S.council.map(m=>{const [l,c]=relLabel(m.rel);const left=m.rel<0?50+m.rel/2:50,w=Math.abs(m.rel)/2;const owed=S.commitments.some(x=>x.m===m.id);
+    return `<div class="card cmcard"><div class="top"><div><div class="eyebrow" style="color:${BC[m.bloc]}">District ${m.n} · ${esc(m.district)}</div><h3>${esc(m.name)}</h3></div><span class="pill ${c}">${l}</span></div>
+    <div class="relrow"><div class="meter center"><b style="left:${left}%;width:${w}%;background:${m.rel>=0?'var(--good)':'var(--bad)'}"></b></div><span class="num">${sgn(Math.round(m.rel))}</span></div>
+    <p class="wants">Pet project: <b>${esc(m.pet.name)}</b> (${money(m.pet.cost)}/yr) ${S.pets[m.id]?'<span class="pill good">Funded</span>':owed?'<span class="pill warn">You promised it</span>':''}</p>
+    <div class="chips"><span class="pill">${BLOCS[m.bloc].name}</span>${m.trait?`<span class="pill" title="${esc(TRAITS[m.trait].h)}">${TRAITS[m.trait].name}</span>`:''}${m.voteP?'<span class="pill gold">Pledged: next budget</span>':''}${m.endorse?'<span class="pill gold">Will endorse</span>':''}</div>
+    <div><button class="btn small primary" data-cmnego="${m.id}" ${S.slots<1?'disabled':''}>Meet</button></div></div>`}).join('')}</div></div>`;
+}
+function renderPlayers(){
+  const fs=Object.keys(S.rel);
+  return `${renderCouncil()}<div class="section"><div class="section-head"><h2>Who else has power in ${esc(S.city)}</h2><span class="eyebrow">Each meeting uses 1 agenda slot</span></div><div class="players">
+  ${fs.map(f=>{const F=FACTIONS[f];const v=S.rel[f];const [l,c]=relLabel(v);const chips=[];
+    if(S.pledged[f])chips.push('<span class="pill gold">Pledged to endorse</span>');
+    if(peace(f))chips.push('<span class="pill good">Truce through '+when(S.peace[f])+'</span>');
+    S.commitments.filter(x=>x.f===f).forEach(x=>chips.push(`<span class="pill warn">You owe: ${DN[x.dept]} ≥${x.min}% by ${when(x.due)}</span>`));
+    if(F.donor)chips.push(`<span class="pill">Donor · up to ${cmoney(F.donor*1.5)}</span>`);
+    if(f==='governor')chips.push(`<span class="pill">${(S.govLean>0)===(S.lean>0)?'Same side as most voters':'From the other party'}</span>`);
+    const left=v<0?50+v/2:50,width=Math.abs(v)/2;
+    return `<div class="card player"><div class="top"><h3>${esc(F.name)}</h3><span class="pill ${c}">${l}</span></div>
+    <div class="relrow"><div class="meter center"><b style="left:${left}%;width:${width}%;background:${v>=0?'var(--good)':'var(--bad)'}"></b></div><span class="num">${sgn(Math.round(v))}</span></div>
+    <p class="wants">${esc(F.blurb)}${F.dept?` Watches: <b>${DN[F.dept]}</b> (now ${S.budget[F.dept]}%).`:''}</p>
+    ${chips.length?`<div class="chips">${chips.join('')}</div>`:''}
+    <div><button class="btn small primary" data-nego="${f}" ${S.slots<1?'disabled':''}>Negotiate</button></div></div>`}).join('')}</div></div>`;
+}
+function meterRow(label,v,color,note){return `<div class="section"><div class="row" style="display:flex;justify-content:space-between;align-items:baseline"><span class="eyebrow">${label}</span><span class="num" style="font-weight:600;font-size:20px">${Math.round(v)}</span></div><div class="meter"><b style="width:${v}%;background:${color}"></b></div><p class="muted" style="font-size:13px">${note}</p></div>`}
+function renderHome(){
+  const st=S.stress,fm=S.family,ex=S.exposure;
+  const exLabel=ex<15?'Quiet. Nobody is digging.':ex<35?'A reporter has your name in a notebook.':ex<60?'The Ledger is making calls about you.':'A story is coming. It is a matter of when.';
+  return `<div class="section"><div class="section-head"><h2>The rest of your life</h2><span class="eyebrow">It all comes out eventually</span></div>
+  <div class="blocs"><div class="card">${meterRow('Stress',st,st>=70?'var(--bad)':st>=45?'var(--warn)':'var(--good)',st>=75?'You are close to burning out. Gaffes are likely.':st>=50?'Running hot. Rest soon.':'Manageable.')}</div>
+  <div class="card">${meterRow('Family',fm,fm<35?'var(--bad)':fm<55?'var(--warn)':'var(--good)',fm<30?'Home is in crisis.':fm<55?'Your partner has started keeping score.':'Steady at home. Good debate material.')}</div>
+  <div class="card">${meterRow('Integrity',S.integrity,S.integrity<40?'var(--bad)':S.integrity<60?'var(--warn)':'var(--good)',exLabel)}</div></div></div>
+  <div class="section"><div class="section-head"><h2>Personal time</h2><span class="eyebrow">Stress rises every quarter; family drifts if ignored</span></div><div class="card acts">
+  ${actRow('Family dinner, phones off','Family up, a little less stress.',abtn('family','Go home'))}
+  ${actRow('Sleep, gym, a real lunch','A big drop in stress.',abtn('gym','Do it'))}
+  ${actRow('See a counselor','Steady relief at home and at work.',abtn('counselor','Book it'))}
+  ${actRow('Long weekend at the lake','Large relief for stress and family. Columnists will notice.',abtn('weekend','Pack the car'))}
+  </div></div>`;
+}
+function renderCampaign(){
+  const open=S.q>=13;const p=S.perception;
+  let fc='';
+  if(S.opp){const r=electionFactors();fc=`<div class="card section"><div class="section-head" style="border-bottom-width:1px"><h3 style="font-size:22px">${esc(S.opp.name)}</h3><span class="pill bad">Challenger</span></div><p class="muted">${esc(S.opp.pitch)}</p>
+   <div class="kv"><span>Opponent war chest</span><span class="v">${cmoney(S.opp.chest)}</span><span>You have raised</span><span class="v">${cmoney(S.raised)}</span><span><b>Projected vote share</b></span><span class="v" style="color:${r.share>50?'var(--good)':'var(--bad)'}">${(r.share-3).toFixed(0)}–${(r.share+3).toFixed(0)}%</span></div></div>`}
+  return `<div class="section"><div class="section-head"><h2>Campaign money</h2><span class="eyebrow">Who you take money from shapes how voters see you</span></div>
+  <div class="overview"><div class="card kv"><span>Cash on hand</span><span class="v">${cmoney(S.chest)}</span><span>Raised this term</span><span class="v">${cmoney(S.raised)}</span><span>Endorsement pledges</span><span class="v">${Object.keys(S.pledged).length}</span></div>
+  <div class="card section"><div class="eyebrow">Public image</div><div class="meter center"><b style="left:${p<0?50+p/2:50}%;width:${Math.abs(p)/2}%;background:var(--sign)"></b></div><div style="display:flex;justify-content:space-between;font-size:12px" class="muted"><span>Grassroots</span><span>Establishment</span></div>
+  <p class="muted" style="font-size:13px">Progressives reward grassroots money. Conservatives tolerate establishment money. Moderates distrust either extreme.</p></div></div>
+  <div class="card acts">
+  ${actRow('Small-dollar online drive','Modest money, grassroots image, tiring.',abtn('grassroots','Launch'))}
+  ${actRow('Chamber business luncheon','Solid money, establishment image.',abtn('luncheon','Attend'))}
+  ${actRow('Labor hall fundraiser','Unions warm up; Northgate frowns.',abtn('union','Speak'))}
+  ${actRow('Celebrity gala','Good money, late night, family suffers.',abtn('gala','RSVP'))}
+  ${actRow('Private dinner with developers','Big money. Reporters notice these.',abtn('devdinner','Accept'))}
+  ${actRow('Wink at a super PAC',S.q>=9?'Huge money. Real scandal risk.':'Super PACs start forming in Year 3.',abtn('pac','Nod','',S.q<9))}
+  </div></div>
+  <div class="section"><div class="section-head"><h2>Re-election</h2><span class="eyebrow">${open?'Election Day closes out '+when(16):'Opens in '+when(13)}</span></div>
+  ${fc}
+  ${open?`<div class="card acts">
+   ${actRow('TV ad blitz','Costs '+cmoney(40)+' from the war chest. Lifts every bloc.',abtn('ads','Air it','',S.chest<40))}
+   ${actRow('Knock doors in Midtown','Builds your ground game. Exhausting.',abtn('doors','Knock'))}
+   ${actRow('Rally your base','Fires up your strongest neighborhood.',abtn('rally','Rally'))}
+   ${actRow('Debate prep','The final debate is in '+when(16)+'. Every session helps.',abtn('prep','Rehearse'))}
+   ${actRow('Run an attack ad','Costs '+cmoney(30)+'. Works, and costs you some integrity.',abtn('attack','Approve','',S.chest<30))}
+  </div>`:`<div class="card"><p class="muted">The race starts in earnest in Year 4. Until then, raise money, keep promises and make friends who will endorse you. Players at <b>Friendly +40</b> or higher endorse you automatically; a pledge counts if relations stay above +10.</p></div>`}</div>`;
+}
+function renderSide(){
+  const pend=S.budgetSession&&!S.budgetSubmitted&&pendChanged();
+  return `<div class="card closeq"><button class="btn sign" data-endq>Close ${when(S.q)}</button>
+   <p class="muted" style="font-size:13px">${S.slots?`${S.slots} agenda slot${S.slots>1?'s':''} unused. `:''}${pend?'Your budget edits have not gone to the council. ':''}Revenue, services and voters update when you close the quarter.</p></div>
+  <div class="card"><div class="section-head" style="border-bottom-width:1px"><h3 style="font-size:20px">Your promises</h3></div>
+  ${S.promises.map(id=>{const P=PROMISES[id];const br=P.broken&&P.broken();const ok=P.check();return `<div class="promise"><div class="row"><span class="t">${esc(P.name)}</span><span class="pill ${br?'bad':ok?'good':'warn'}">${br?'Broken':ok?'On track':'Behind'}</span></div><div class="d">${esc(P.desc)}</div><div class="meter"><b style="width:${clamp(P.prog(),0,1)*100}%;background:${br?'var(--bad)':ok?'var(--good)':'var(--warn)'}"></b></div></div>`}).join('')}</div>
+  <div class="card"><div class="section-head" style="border-bottom-width:1px"><h3 style="font-size:20px">City wire</h3></div><ul class="wire">${S.news.slice(0,12).map(n=>`<li><span class="when">${when(n.q)}</span><span class="${n.tone}">${esc(n.t)}</span></li>`).join('')}</ul></div>`;
+}
+
+/* ============ setup screen ============ */
+function renderSetup(){
+  const c=SETUP;const mix=popShares(c.lean);const saved=loadSave();
+  return `<div class="wrap"><div class="setup">
+  ${saved?`<div class="banner"><b>Term in progress:</b><span>Mayor ${esc(saved.mayor)} of ${esc(saved.city)}, ${when(saved.q)}.</span><button class="btn primary small" data-resume>Resume</button></div>`:''}
+  <div class="hero"><div class="seal" aria-hidden="true">${esc(initials(c.city||'City'))}</div><div><h1>You won.<br>Now govern.</h1><p>Sixteen quarters until you face the voters again. Balance the books, keep your promises, make deals, raise money without getting caught, and try to see your family.</p></div></div>
+  <div class="step"><div class="n">1</div><div><h2>Your city</h2><p class="help">The size sets the stakes: bigger cities have bigger budgets, a bigger council and more crises per quarter.</p>
+   <div class="fields" style="margin-bottom:12px"><div class="field"><label for="f-mayor">Your name</label><input id="f-mayor" data-setup="mayor" value="${esc(c.mayor)}" maxlength="40"></div><div class="field"><label for="f-city">City name</label><input id="f-city" data-setup="city" value="${esc(c.city)}" maxlength="32"></div></div>
+   <div class="sizes">${Object.entries(SIZES).map(([k,s])=>`<button class="opt" data-size="${k}" aria-pressed="${c.size===k}"><span class="t">${s.label}</span><span class="m">${s.pop} · ${money(1027,s.money)} budget</span><span class="d">${s.blurb}</span></button>`).join('')}</div></div></div>
+  <div class="step"><div class="n">2</div><div><h2>The electorate</h2><p class="help">Where the city sits overall. It sets how many progressive, moderate and conservative voters you answer to.</p>
+   <div class="seg">${LEANS.map(l=>`<button class="opt" data-lean="${l.v}" aria-pressed="${c.lean===l.v}"><span class="t">${l.label}</span></button>`).join('')}</div>
+   <div class="mix" aria-label="Voter mix"><span style="flex-basis:${mix.L*100}%;background:var(--bl)">${Math.round(mix.L*100)}% progressive</span><span style="flex-basis:${mix.C*100}%;background:var(--bc)">${Math.round(mix.C*100)}% moderate</span><span style="flex-basis:${mix.R*100}%;background:var(--br)">${Math.round(mix.R*100)}% conservative</span></div></div></div>
+  <div class="step"><div class="n">3</div><div><h2>Who has power</h2><p class="help">Pick 3 to 6 major players. A City Council, one member per district, is always in the game. <span class="counter ${c.factions.length>=3&&c.factions.length<=6?'ok':''}">${c.factions.length} chosen</span></p>
+   <div class="chipgrid">${Object.entries(FACTIONS).filter(([k])=>k!=='council').map(([k,F])=>`<button class="opt" data-fac="${k}" aria-pressed="${c.factions.includes(k)}"><span class="t">${esc(F.name)}</span><span class="d">${esc(F.blurb)}</span></button>`).join('')}</div></div></div>
+  <div class="step"><div class="n">4</div><div><h2>What you promised</h2><p class="help">Pick exactly 3 campaign promises. Voters grade you on them every year and on Election Day. <span class="counter ${c.promises.length===3?'ok':''}">${c.promises.length} of 3</span></p>
+   <div class="chipgrid">${Object.entries(PROMISES).map(([k,P])=>`<button class="opt" data-prom="${k}" aria-pressed="${c.promises.includes(k)}"><span class="t">${esc(P.name)}</span><span class="d">${esc(P.desc)}</span></button>`).join('')}</div></div></div>
+  <div class="go"><button class="btn sign" data-start ${c.factions.length>=3&&c.factions.length<=6&&c.promises.length===3?'':'disabled'}>Take the oath of office</button><span class="muted">Your term saves in this browser as you play.</span></div>
+  </div></div>`;
+}
+
+/* ============ events wiring ============ */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;const d=t.dataset;
+  if(!S||d.start!==undefined||d.resume!==undefined||d.size||d.lean!==undefined||d.fac||d.prom){
+    if(d.size){SETUP.size=d.size;render()}
+    else if(d.lean!==undefined&&!S){SETUP.lean=+d.lean;render()}
+    else if(d.fac){const a=SETUP.factions;const i=a.indexOf(d.fac);if(i>=0)a.splice(i,1);else if(a.length<6)a.push(d.fac);else toast('Six players is the limit.');render()}
+    else if(d.prom){const a=SETUP.promises;const i=a.indexOf(d.prom);if(i>=0)a.splice(i,1);else if(a.length<3)a.push(d.prom);else toast('Three promises. Deselect one first.');render()}
+    else if(d.start!==undefined){newGame(SETUP)}
+    else if(d.resume!==undefined){S=loadSave();if(S){render();if(S.queue.length)nextEvent()}}
+    if(!S||d.start!==undefined||d.resume!==undefined)return;
+  }
+  if(d.tab){S.tab=d.tab;save();render();window.scrollTo({top:0})}
+  else if(d.act){doAction(d.act,d.arg)}
+  else if(d.choice!==undefined){resolveChoice(+d.choice)}
+  else if(d.next!==undefined){nextEvent()}
+  else if(d.close!==undefined){closeModal()}
+  else if(d.nego){openNego(d.nego)}
+  else if(d.cmnego){openCmNego(d.cmnego)}
+  else if(d.cmask){NEGO.ask=d.cmask;renderCmNego()}
+  else if(d.cmoffer){NEGO.offer=d.cmoffer;renderCmNego()}
+  else if(d.cmpitch!==undefined){cmPitch()}
+  else if(d.pet){S.pend.pets[d.pet]=!S.pend.pets[d.pet];if(!S.pend.pets[d.pet])delete S.pend.pets[d.pet];const y=window.scrollY;render();window.scrollTo({top:y})}
+  else if(d.ask){NEGO.ask=d.ask;renderNego()}
+  else if(d.offer){NEGO.offer=d.offer;renderNego()}
+  else if(d.pitch!==undefined){pitch()}
+  else if(d.endq!==undefined){if($('#modalWrap').hidden)endQuarter()}
+  else if(d.afterreport!==undefined){closeModal();afterReport()}
+  else if(d.restart!==undefined){closeModal();S=null;SETUP=defaultSetup();render();window.scrollTo({top:0})}
+  else if(d.prog){S.pend.programs[d.prog]=!S.pend.programs[d.prog];const y=window.scrollY;render();window.scrollTo({top:y})}
+  else if(d.submit!==undefined){submitBudget()}
+  else if(d.resetbudget!==undefined){syncPend();const y=window.scrollY;render();window.scrollTo({top:y})}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.setup){SETUP[t.dataset.setup]=t.value;if(t.dataset.setup==='city'){const s=$('.hero .seal');if(s)s.textContent=initials(t.value||'City')}return}
+  if(!S)return;
+  if(t.dataset.tax||t.dataset.dept){
+    if(t.dataset.tax)S.pend.tax[t.dataset.tax]=+(+t.value).toFixed(2);else S.pend.budget[t.dataset.dept]=+t.value;
+    const out=t.parentElement.querySelector('.out');
+    if(t.dataset.dept){const d=DEPTS.find(x=>x.id===t.dataset.dept);const v=S.pend.budget[d.id];out.innerHTML=`${v}%${v!==S.budget[d.id]?` <span class="chg">(was ${S.budget[d.id]}%)</span>`:''}<small>${money(d.base*v/100)}/yr</small>`;
+      const sub=t.parentElement.querySelector('.sub');sub.textContent=`Rated ${S.svc[d.id].toFixed(0)} · target ${target(d.id,S.pend.budget,S.pend.programs,S.pend.pets).toFixed(0)}`}
+    else{const k=t.dataset.tax,v=S.pend.tax[k];const f=k==='fees'?x=>Math.round(x*100)+'%':x=>x.toFixed(2)+'%';
+      const rv={prop:x=>470*(x/1.1),sales:x=>290*(x/1.5)*(1-.12*Math.max(0,x-1.5)),fees:x=>110*x}[k];
+      out.innerHTML=`${f(v)}${Math.abs(v-S.tax[k])>1e-9?` <span class="chg">(was ${f(S.tax[k])})</span>`:''}<small>${money(rv(v)*S.econ)}/yr</small>`}
+    refreshBudgetSummary();
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalWrap').hidden&&$('#modal [data-close]'))closeModal()});
+
+/* ============ boot ============ */
+window.claude?.hot?.snapshot?.(()=>({S,SETUP}));
+function start(data){
+  SETUP=(data&&data.SETUP)||defaultSetup();
+  S=(data&&data.S)?upgradeSave(data.S):null;
+  render();
+  if(S&&S.queue&&S.queue.length)nextEvent();
+}
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+</body>
+</html>
