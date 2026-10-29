@@ -1234,6 +1234,13 @@ document.addEventListener('input',e=>{
   }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalWrap').hidden&&$('#modal [data-close]'))closeModal()});
+// The Android app's back button asks the page first: close a dismissible dialog, then go back to City Hall.
+// Returns false when there is nothing to step back from, so the app can close.
+window.fsBack=()=>{
+  if(!$('#modalWrap').hidden){if($('#modal [data-close]')){closeModal();return true}return true}
+  if(S&&S.tab!=='hall'){S.tab='hall';save();render();window.scrollTo({top:0});return true}
+  return false;
+};
 
 /* ============ boot ============ */
 window.claude?.hot?.snapshot?.(()=>({S,SETUP}));

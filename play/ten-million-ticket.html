@@ -117,6 +117,7 @@ button{font-family:inherit}
 .stat .v{font-family:var(--f-num);font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat .s{font-size:12px;color:var(--muted)}
 .stat.hero .v{color:var(--accent)}
+.stat.hero .v.neg{color:var(--bad)}   /* a negative net worth never reads as good news */
 .meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 18px}
 .meter{display:flex;flex-direction:column;gap:5px}
 .meter .row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600}
@@ -983,7 +984,7 @@ function viewPlay(){
         <span class="yearbar" aria-hidden="true">${Array.from({length:MAX_YEAR}, (_, i) => `<i class="${i + 1 < S.year ? 'done' : i + 1 === S.year ? 'now' : ''}"></i>`).join('')}</span></div>
       <div class="actions"><button class="btn sm" data-act="newgame">New game</button><button class="btn primary" data-act="endyear">Finish year ${S.year}</button></div>
     </header>
-    <section class="stats" aria-label="Finances">${stats.map((s, i) => `<div class="stat ${i === 5 ? 'hero' : ''}"><span class="eyebrow">${s[0]}</span><span class="v ${i === 4 ? (flow < 0 ? 'neg' : 'pos') : ''}">${s[1]}</span><span class="s">${s[2]}</span></div>`).join('')}</section>
+    <section class="stats" aria-label="Finances">${stats.map((s, i) => `<div class="stat ${i === 5 ? 'hero' : ''}"><span class="eyebrow">${s[0]}</span><span class="v ${i === 4 ? (flow < 0 ? 'neg' : 'pos') : i === 5 && netWorth() < 0 ? 'neg' : ''}">${s[1]}</span><span class="s">${s[2]}</span></div>`).join('')}</section>
     <section class="meters" aria-label="Life">${meters.map(([k, l]) => `<div class="meter"><div class="row"><span>${l}</span><span class="num">${Math.round(S.m[k])}</span></div><div class="bar"><div class="fill" style="width:${S.m[k]}%;background:${meterColor(k, S.m[k])}"></div></div></div>`).join('')}
       <div class="meter"><div class="row"><span>Who knows you won</span></div><div><span class="tag">${PUB_LABEL[S.publicity]}${S.trust ? '' : ' + lottery website'}</span></div></div></section>
     <div class="desk">
@@ -1139,6 +1140,8 @@ function fitCmp(){
   });
 }
 addEventListener('resize', fitCmp);
+// "Ten years", "Six years", "One year": how long the game actually lasted (it ends early on bankruptcy).
+const yearsText = n => ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'][n] + (n === 1 ? ' year' : ' years');
 function viewEnd(){
   const nw = netWorth(), pv = annPV(), total = nw + pv, m = S.m, life = (m.happy + m.rel + m.safety + m.health) / 4;
   const v = S.over === 'bankrupt' ? ['Broke.', 'Your debts outgrew everything you owned. You filed for bankruptcy.']
@@ -1150,17 +1153,17 @@ function viewEnd(){
   const lv = life >= 70 ? 'And your life feels genuinely good: healthy, safe, and close to the people you love.' : life >= 55 ? 'Life is decent. Some parts got better, some got harder.' : life >= 40 ? 'Life feels strained. Money changed things in ways you didn’t expect.' : 'The money cost you more than it gave: stress, distance, and fear.';
   const cats = Object.entries(S.spent).filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]), mx = cats.length ? cats[0][1] : 1;
   return `<div class="stage" style="align-items:stretch;gap:24px">
-    <div style="display:flex;flex-direction:column;gap:10px"><p class="stamp">TEN YEARS LATER · AGE ${S.age}</p><div class="verdict">${v[0]}</div><p style="font-size:18px;max-width:62ch">${v[1]} ${lv}</p></div>
+    <div style="display:flex;flex-direction:column;gap:10px"><p class="stamp">${yearsText(S.year).toUpperCase()} LATER · AGE ${S.age}</p><div class="verdict">${v[0]}</div><p style="font-size:18px;max-width:62ch">${v[1]} ${lv}</p></div>
     <section class="stats">
-      <div class="stat hero"><span class="eyebrow">Net worth</span><span class="v">${money(nw)}</span><span class="s">Started with ${money(-33000)}</span></div>
+      <div class="stat hero"><span class="eyebrow">Net worth</span><span class="v ${nw < 0 ? 'neg' : ''}">${money(nw)}</span><span class="s">Started with ${money(-33000)}</span></div>
       ${S.payout === 'annuity' ? `<div class="stat"><span class="eyebrow">Future payments</span><span class="v">${money(pv)}</span><span class="s">${Math.round(S.annLeft / 12)} years left, today’s value</span></div>` : ''}
       <div class="stat"><span class="eyebrow">Safe yearly income</span><span class="v">${money(liquid() * .04 + annNetYear())}</span><span class="s">4% of investments${S.payout === 'annuity' ? ' + annuity' : ''}</span></div>
       <div class="stat"><span class="eyebrow">Debt</span><span class="v">${money(S.debt)}</span><span class="s">${S.debt ? 'Still owed' : 'Debt-free'}</span></div>
-      <div class="stat"><span class="eyebrow">Decisions made</span><span class="v">${S.decisions}</span><span class="s">Over ${S.year} years</span></div>
+      <div class="stat"><span class="eyebrow">Decisions made</span><span class="v">${S.decisions}</span><span class="s">Over ${S.year} year${S.year === 1 ? '' : 's'}</span></div>
     </section>
     <section class="meters">${[['happy', 'Happiness'], ['rel', 'Relationships'], ['safety', 'Safety'], ['health', 'Health']].map(([k, l]) => `<div class="meter"><div class="row"><span>${l}</span><span class="num">${Math.round(m[k])}</span></div><div class="bar"><div class="fill" style="width:${m[k]}%;background:${meterColor(k, m[k])}"></div></div></div>`).join('')}</section>
     <div class="rgrid">
-      <div class="card"><h3>Net worth over ten years</h3><div class="chart">${chart(S.history, 420, 170)}</div></div>
+      <div class="card"><h3>Net worth over ${yearsText(S.year).toLowerCase()}</h3><div class="chart">${chart(S.history, 420, 170)}</div></div>
       <div class="card"><h3>Where the money went</h3><div class="spend">${cats.map(([c, a]) => `<div class="r"><span>${c}</span><div class="b" style="width:${Math.max(2, 100 * a / mx)}%"></div><span class="num" style="text-align:right">${money(a)}</span></div>`).join('') || '<p class="muted">You barely spent a thing.</p>'}</div></div>
     </div>
     ${S.reports.length ? `<div class="card"><h3>Year by year</h3>${compareTable(S.reports, null, null)}</div>` : ''}

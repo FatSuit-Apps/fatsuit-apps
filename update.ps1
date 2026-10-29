@@ -25,6 +25,7 @@ Copy-Apk "$root\daily-tasks-android\daily-tasks.apk" "$site\downloads\TaskTracke
 Copy-Apk "$root\comeback-android\comeback.apk"      "$site\downloads\Comeback.apk"
 Copy-Apk "$root\ten-million-android\ten-million-ticket.apk" "$site\downloads\TenMillionTicket.apk"
 Copy-Apk "$root\one-button-trio-android\one-button-trio.apk" "$site\downloads\OneButtonTrio.apk"
+Copy-Apk "$root\mayors-first-term-android\mayors-first-term.apk" "$site\downloads\MayorsFirstTerm.apk"
 
 # Browser versions of the web-based apps.
 Copy-Item "$root\tuesday\tuesday.html"      "$site\play\tuesday.html"
@@ -45,8 +46,8 @@ $versions = [ordered]@{
     'Comeback'     = ([xml](Get-Content "$root\comeback-android\AndroidManifest.xml")).manifest.versionName
     '$10M Ticket'  = ([xml](Get-Content "$root\ten-million-android\AndroidManifest.xml")).manifest.versionName
     'One-Button Trio' = ([xml](Get-Content "$root\one-button-trio-android\AndroidManifest.xml")).manifest.versionName
-    # Browser-only: the version lives in a <meta name="version"> tag.
-    "Mayor's First Term" = [regex]::Match((Get-Content "$root\mayors-first-term\index.html" -Raw -Encoding UTF8), '<meta name="version" content="([^"]+)">').Groups[1].Value
+    # Its build.ps1 keeps this equal to the page's <meta name="version"> (the browser version).
+    "Mayor's First Term" = ([xml](Get-Content "$root\mayors-first-term-android\AndroidManifest.xml")).manifest.versionName
 }
 $page = Get-Content "$site\index.html" -Raw
 foreach ($app in $versions.Keys) {
